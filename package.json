@@ -12,7 +12,8 @@
     "test:integration": "echo \"No integration tests specified\" && exit 0",
     "test:e2e": "echo \"No e2e tests specified\" && exit 0",
     "clean": "rm -rf .next out",
-    "analyze": "ANALYZE=true npm run build"
+    "analyze": "ANALYZE=true npm run build",
+    "verify-setup": "node scripts/verify-setup.js"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",
