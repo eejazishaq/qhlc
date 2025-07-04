@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     siteName: "QHLC",
     images: [
       {
-        url: "/icons/icon-512x512.png",
+        url: "/icons/icon-512x512.svg",
         width: 512,
         height: 512,
         alt: "QHLC Logo",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "QHLC - Quranic Learning Portal",
     description: "Comprehensive Quranic learning and exam management platform",
-    images: ["/icons/icon-512x512.png"],
+    images: ["/icons/icon-512x512.svg"],
   },
   robots: {
     index: true,
@@ -62,13 +62,6 @@ export const metadata: Metadata = {
       { url: "/icons/apple-touch-icon.svg", sizes: "180x180", type: "image/svg+xml" },
     ],
   },
-  themeColor: "#1e40af",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -76,6 +69,14 @@ export const metadata: Metadata = {
   },
   applicationName: "QHLC",
   category: "education",
+}
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#1e40af",
 };
 
 export default function RootLayout({
