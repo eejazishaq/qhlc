@@ -6,19 +6,28 @@ import { useAuth } from '@/lib/hooks/useAuth'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
 
   useEffect(() => {
     if (!loading) {
       if (user) {
-        // Redirect to user dashboard
-        router.push('/dashboard/user')
+        // Redirect based on user role
+        if (profile?.user_type === 'coordinator') {
+          router.push('/dashboard/coordinator')
+        } else if (profile?.user_type === 'convener') {
+          router.push('/dashboard/convener')
+        } else if (['admin', 'super_admin'].includes(profile?.user_type || '')) {
+          router.push('/admin')
+        } else {
+          // Default to user dashboard
+          router.push('/dashboard/user')
+        }
       } else {
         // Redirect to login if not authenticated
         router.push('/login')
       }
     }
-  }, [user, loading, router])
+  }, [user, profile, loading, router])
 
   // Show loading while redirecting
   return (
