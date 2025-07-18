@@ -304,7 +304,7 @@ export default function DashboardLayout({
               <Menu className="w-6 h-6" />
             </button>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 ml-auto">
               {/* Notifications */}
               <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md">
                 <div className="relative">

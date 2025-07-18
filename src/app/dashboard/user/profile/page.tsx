@@ -7,12 +7,17 @@ import { User, Mail, Phone, MapPin, Calendar, Edit, Save, X } from 'lucide-react
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import ProfileImageUpload from '@/components/forms/ProfileImageUpload'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default function UserProfilePage() {
-  const { profile, updateProfile, loading } = useAuth()
+  const { user, profile, updateProfile, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [areas, setAreas] = useState<{ id: string; name: string; code: string; is_active: boolean }[]>([])
+  const [centers, setCenters] = useState<{ id: string; name: string; area_id: string; is_active: boolean }[]>([])
+  const [filteredCenters, setFilteredCenters] = useState<{ id: string; name: string; area_id: string; is_active: boolean }[]>([])
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     mobile: profile?.mobile || '',
@@ -20,18 +25,60 @@ export default function UserProfilePage() {
     gender: profile?.gender || '' as 'male' | 'female' | '',
     father_name: profile?.father_name || '',
     dob: profile?.dob || '',
-    iqama_number: profile?.iqama_number || ''
+    iqama_number: profile?.iqama_number || '',
+    area_id: profile?.area_id || '',
+    center_id: profile?.center_id || '',
   })
+  const [profileImageUrl, setProfileImageUrl] = useState(profile?.profile_image || '')
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
+    console.log('Profile page - loading:', loading, 'profile:', profile, 'user:', user)
     if (!loading && !profile) {
+      console.log('Redirecting to login - no profile found')
       router.push('/login')
     }
-  }, [profile, loading, router])
+  }, [profile, loading, router, user])
+
+  // Fetch areas and centers from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = createClientComponentClient()
+      const { data: areaData } = await supabase.from('areas').select('id, name, code, is_active').eq('is_active', true)
+      const { data: centerData } = await supabase.from('exam_centers').select('id, name, area_id, is_active').eq('is_active', true)
+      setAreas(areaData || [])
+      setCenters(centerData || [])
+    }
+    fetchData()
+  }, [])
+
+  // Filter centers by selected area
+  useEffect(() => {
+    if (formData.area_id) {
+      setFilteredCenters(centers.filter((c) => c.area_id === formData.area_id))
+    } else {
+      setFilteredCenters([])
+    }
+  }, [formData.area_id, centers])
+
+  // Sync formData with profile when profile changes
+  useEffect(() => {
+    setFormData({
+      full_name: profile?.full_name || '',
+      mobile: profile?.mobile || '',
+      whatsapp_no: profile?.whatsapp_no || '',
+      gender: profile?.gender || '' as 'male' | 'female' | '',
+      father_name: profile?.father_name || '',
+      dob: profile?.dob || '',
+      iqama_number: profile?.iqama_number || '',
+      area_id: profile?.area_id || '',
+      center_id: profile?.center_id || '',
+    })
+    setProfileImageUrl(profile?.profile_image || '')
+  }, [profile])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -44,7 +91,8 @@ export default function UserProfilePage() {
     try {
       const updateData = {
         ...formData,
-        gender: formData.gender as 'male' | 'female' | undefined
+        gender: formData.gender as 'male' | 'female' | undefined,
+        dob: formData.dob === '' ? null : formData.dob,
       }
       const result = await updateProfile(updateData)
       if (!result.error) {
@@ -63,7 +111,9 @@ export default function UserProfilePage() {
       gender: profile?.gender || '' as 'male' | 'female' | '',
       father_name: profile?.father_name || '',
       dob: profile?.dob || '',
-      iqama_number: profile?.iqama_number || ''
+      iqama_number: profile?.iqama_number || '',
+      area_id: profile?.area_id || '',
+      center_id: profile?.center_id || '',
     })
     setIsEditing(false)
   }
@@ -107,6 +157,21 @@ export default function UserProfilePage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Profile Image */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Picture</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProfileImageUpload
+                currentImageUrl={profileImageUrl}
+                onImageUpdate={setProfileImageUrl}
+                onError={(error) => console.error('Profile image error:', error)}
+                disabled={!isEditing}
+              />
+            </CardContent>
+          </Card>
+
           {/* Basic Information */}
           <Card className="lg:col-span-2">
             <CardHeader>
@@ -188,6 +253,40 @@ export default function UserProfilePage() {
                 disabled={!isEditing}
               />
 
+              {/* Area and Exam Center Dropdowns */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Area</label>
+                  <select
+                    name="area_id"
+                    value={formData.area_id}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                  >
+                    <option value="">Select area</option>
+                    {areas.map((area) => (
+                      <option key={area.id} value={area.id}>{area.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Exam Center</label>
+                  <select
+                    name="center_id"
+                    value={formData.center_id}
+                    onChange={handleInputChange}
+                    disabled={!isEditing || !formData.area_id}
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                  >
+                    <option value="">Select center</option>
+                    {filteredCenters.map((center) => (
+                      <option key={center.id} value={center.id}>{center.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {isEditing && (
                 <div className="flex space-x-3 pt-4">
                   <Button onClick={handleSave} className="flex items-center">
@@ -225,7 +324,7 @@ export default function UserProfilePage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">Email</p>
-                  <p className="text-sm text-gray-500">{profile?.id || 'user@example.com'}</p>
+                  <p className="text-sm text-gray-500">{user?.email || 'user@example.com'}</p>
                 </div>
               </div>
 

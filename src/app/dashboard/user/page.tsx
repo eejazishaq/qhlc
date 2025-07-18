@@ -5,11 +5,22 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { BookOpen, Calendar, Award, Clock, User, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default function UserDashboard() {
   const { user, profile, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+
+  // Dashboard stats state
+  const [stats, setStats] = useState({
+    totalExams: null as number | null,
+    certificates: null as number | null,
+    studyHours: null as number | null,
+    progress: null as number | null,
+  })
+  const [statsLoading, setStatsLoading] = useState(true)
+  const [statsError, setStatsError] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -20,6 +31,71 @@ export default function UserDashboard() {
       router.push('/login')
     }
   }, [user, loading, router])
+
+  // Fetch dashboard stats from Supabase
+  useEffect(() => {
+    if (!user) return
+    const supabase = createClientComponentClient()
+    setStatsLoading(true)
+    setStatsError(null)
+
+    Promise.all([
+      // Total Exams
+      supabase
+        .from('user_exams')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id),
+      // Certificates
+      supabase
+        .from('certificates')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id),
+      // Study Hours (sum of exam durations for completed exams)
+      supabase
+        .from('user_exams')
+        .select('exam_id, exams(duration)', { count: 'exact' })
+        .eq('user_id', user.id)
+        .eq('status', 'completed'),
+      // Progress (percentage memorized)
+      supabase
+        .from('progress')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'memorized'),
+      supabase
+        .from('progress')
+        .select('id')
+        .eq('user_id', user.id),
+    ])
+      .then(async ([examsRes, certsRes, studyRes, memorizedRes, allProgressRes]) => {
+        // Total Exams
+        const totalExams = examsRes.count ?? 0
+        // Certificates
+        const certificates = certsRes.count ?? 0
+        // Study Hours
+        let studyHours = 0
+        if (studyRes.data && Array.isArray(studyRes.data)) {
+          // Each row: { duration } or { exams: [{ duration }] }
+          studyHours = studyRes.data.reduce((sum, row) => {
+            if (typeof row.duration === 'number') return sum + row.duration
+            if (Array.isArray(row.exams) && row.exams.length > 0 && typeof row.exams[0].duration === 'number') {
+              return sum + row.exams[0].duration
+            }
+            return sum
+          }, 0)
+        }
+        // Progress
+        const memorized = memorizedRes.data?.length ?? 0
+        const allProgress = allProgressRes.data?.length ?? 0
+        const progress = allProgress > 0 ? Math.round((memorized / allProgress) * 100) : 0
+        setStats({ totalExams, certificates, studyHours, progress })
+        setStatsLoading(false)
+      })
+      .catch((err) => {
+        setStatsError('Failed to load stats')
+        setStatsLoading(false)
+      })
+  }, [user])
 
   if (loading || !mounted) {
     return (
@@ -63,7 +139,9 @@ export default function UserDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Exams</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {statsLoading ? '...' : stats.totalExams ?? 0}
+                </p>
               </div>
             </div>
           </div>
@@ -75,7 +153,9 @@ export default function UserDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Certificates</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {statsLoading ? '...' : stats.certificates ?? 0}
+                </p>
               </div>
             </div>
           </div>
@@ -87,7 +167,9 @@ export default function UserDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Study Hours</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {statsLoading ? '...' : stats.studyHours ?? 0}
+                </p>
               </div>
             </div>
           </div>
@@ -99,7 +181,9 @@ export default function UserDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Progress</p>
-                <p className="text-2xl font-bold text-gray-900">0%</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {statsLoading ? '...' : `${stats.progress ?? 0}%`}
+                </p>
               </div>
             </div>
           </div>

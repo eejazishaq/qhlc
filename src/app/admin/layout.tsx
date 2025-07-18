@@ -16,7 +16,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Image
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -56,17 +57,18 @@ export default function AdminLayout({
     { name: 'Exams', href: '/admin/exams', icon: FileText },
     { name: 'Evaluation', href: '/admin/evaluation', icon: CheckCircle },
     { name: 'Resources', href: '/admin/resources', icon: Upload },
+    { name: 'Gallery', href: '/admin/gallery', icon: Image },
     { name: 'Transfer Tool', href: '/admin/transfer', icon: ArrowRight },
     { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
   ]
 
-  if (loading || !mounted) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
+  // if (loading || !mounted) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  //     </div>
+  //   )
+  // }
 
   if (!user || !['admin', 'super_admin'].includes(profile?.user_type || '')) {
     return null

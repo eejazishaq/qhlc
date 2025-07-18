@@ -38,13 +38,13 @@ export default function AdminDashboard() {
     }
   }, [user, profile, loading, router])
 
-  if (loading || !mounted) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
+  // if (loading || !mounted) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  //     </div>
+  //   )
+  // }
 
   if (!user || !['admin', 'super_admin'].includes(profile?.user_type || '')) {
     return null

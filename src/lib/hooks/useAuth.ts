@@ -40,24 +40,48 @@ export function useAuth() {
     // Get initial session
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('Getting initial session...')
+        console.log('eeeeeeeen...', await supabase.auth.getSession())
         
-        if (error) {
-          setAuthState(prev => ({ ...prev, error: error.message, loading: false }))
-          return
+        // First try to get the current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        console.log('Current user result:', { user: !!user, error: userError?.message })
+        
+        // Then get the session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        console.log('Session result:', { session: !!session, error: sessionError?.message })
+        
+        if (userError) {
+          console.error('User error:', userError)
+        }
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError)
         }
 
-        if (session?.user) {
-          await fetchProfile(session.user.id)
+        // Use user from session if available, otherwise use direct user call
+        const currentUser = session?.user || user
+        
+        if (currentUser) {
+          console.log('User found:', currentUser.email)
+          await fetchProfile(currentUser.id)
+          setAuthState(prev => ({ 
+            ...prev, 
+            user: currentUser, 
+            session, 
+            loading: false 
+          }))
+        } else {
+          console.log('No user found')
+          setAuthState(prev => ({ 
+            ...prev, 
+            user: null, 
+            session: null, 
+            loading: false 
+          }))
         }
-
-        setAuthState(prev => ({ 
-          ...prev, 
-          user: session?.user ?? null, 
-          session, 
-          loading: false 
-        }))
       } catch (error) {
+        console.error('Failed to get session:', error)
         setAuthState(prev => ({ 
           ...prev, 
           error: 'Failed to get session', 
@@ -71,9 +95,11 @@ export function useAuth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email)
         setAuthState(prev => ({ ...prev, loading: true }))
 
         if (session?.user) {
+          console.log('User authenticated:', session.user.email)
           await fetchProfile(session.user.id)
           setAuthState(prev => ({ 
             ...prev, 
@@ -82,6 +108,7 @@ export function useAuth() {
             loading: false 
           }))
         } else {
+          console.log('User signed out')
           setAuthState(prev => ({ 
             ...prev, 
             user: null, 
@@ -98,6 +125,7 @@ export function useAuth() {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId)
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -108,10 +136,13 @@ export function useAuth() {
         // Don't log error if profile doesn't exist yet (during registration)
         if (error.code !== 'PGRST116') {
           console.error('Error fetching profile:', error)
+        } else {
+          console.log('Profile not found for user:', userId)
         }
         return
       }
 
+      console.log('Profile fetched successfully:', profile)
       setAuthState(prev => ({ ...prev, profile }))
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -120,6 +151,8 @@ export function useAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('SignIn called with email:', email)
+      
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         return { error: 'Supabase not configured. Please set up your environment variables.' }
       }
@@ -131,7 +164,10 @@ export function useAuth() {
         password
       })
 
+      console.log('SignIn result:', { success: !error, error: error?.message })
+
       if (error) {
+        console.error('SignIn error:', error)
         setAuthState(prev => ({ 
           ...prev, 
           error: error.message, 
@@ -140,8 +176,29 @@ export function useAuth() {
         return { error: error.message }
       }
 
+      if (data.user) {
+        console.log('SignIn successful for user:', data.user.email)
+        // Set the user and session immediately
+        setAuthState(prev => ({ 
+          ...prev, 
+          user: data.user, 
+          session: data.session,
+          loading: false 
+        }))
+        
+        // Fetch the profile
+        await fetchProfile(data.user.id)
+      } else {
+        // No user returned, set loading to false
+        setAuthState(prev => ({ 
+          ...prev, 
+          loading: false 
+        }))
+      }
+
       return { data }
     } catch (error) {
+      console.error('SignIn catch error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Sign in failed'
       setAuthState(prev => ({ 
         ...prev, 
@@ -154,11 +211,15 @@ export function useAuth() {
 
   const signUp = async (email: string, password: string, profileData: Partial<Profile>) => {
     try {
+      console.log('signUp called with:', { email, profileData })
+      
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error('Supabase not configured')
         return { error: 'Supabase not configured. Please set up your environment variables.' }
       }
 
       setAuthState(prev => ({ ...prev, loading: true, error: null }))
+      console.log('Loading state set to true')
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -171,7 +232,10 @@ export function useAuth() {
         }
       })
 
+      console.log('Supabase auth signUp result:', { data, error })
+
       if (error) {
+        console.error('Auth signUp error:', error)
         setAuthState(prev => ({ 
           ...prev, 
           error: error.message, 
@@ -182,6 +246,7 @@ export function useAuth() {
 
       // Create profile if signup successful
       if (data.user) {
+        console.log('Creating profile for user:', data.user.id)
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -193,12 +258,43 @@ export function useAuth() {
           console.error('Error creating profile:', profileError)
           // Don't fail the signup if profile creation fails
           // The user can still sign in and complete their profile later
+        } else {
+          console.log('Profile created successfully')
+          
+          // Automatically sign in the user after successful profile creation
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          })
+          
+          if (signInError) {
+            console.error('Auto sign-in error:', signInError)
+            // Don't fail the signup if auto sign-in fails
+          } else {
+            console.log('Auto sign-in successful')
+            // Update auth state with the new session
+            setAuthState(prev => ({ 
+              ...prev, 
+              user: signInData.user, 
+              session: signInData.session,
+              loading: false 
+            }))
+            
+            // Fetch the profile for the signed-in user
+            if (signInData.user) {
+              await fetchProfile(signInData.user.id)
+            }
+            
+            return { data: signInData }
+          }
         }
       }
 
+      console.log('Setting loading to false')
       setAuthState(prev => ({ ...prev, loading: false }))
       return { data }
     } catch (error) {
+      console.error('SignUp catch error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Sign up failed'
       setAuthState(prev => ({ 
         ...prev, 
