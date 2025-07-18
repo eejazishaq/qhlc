@@ -68,6 +68,20 @@ export async function GET(request: NextRequest) {
 
     const { data: userExams, error } = await query
 
+    console.log('===User Exams API Debug===', {
+      user_id: user.id,
+      query_filters: { status, examId },
+      raw_data: userExams,
+      error: error,
+      count: userExams?.length || 0,
+      exam_details: userExams?.map(ue => ({
+        id: ue.id,
+        exam_id: ue.exam_id,
+        exam_title: ue.exam?.title,
+        exam_object: ue.exam
+      }))
+    })
+
     if (error) {
       console.error('Error fetching user exams:', error)
       return NextResponse.json({ error: 'Failed to fetch user exams' }, { status: 500 })
