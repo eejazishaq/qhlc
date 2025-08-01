@@ -565,7 +565,7 @@ export default function UserExamsPage() {
                           </div>
                         </div>
                         <div className="flex space-x-2 self-start sm:self-auto">
-                          {userExam.status === 'completed' && (
+                          {['completed', 'evaluated'].includes(userExam.status) && (
                             <Button
                               onClick={() => router.push(`/dashboard/user/exams/${userExam.id}/results`)}
                               variant="outline"

@@ -31,6 +31,7 @@ QHLC Web Portal is a country-wide web platform for Quranic learning and exam man
 - Exam registration and evaluation
 - Real-time reporting
 - Admin tools for content, schedule, and report management
+- Banner management system for website announcements
 - Arabic/English/Malayalam language support
 
 ---
@@ -103,7 +104,7 @@ The system follows a modern web architecture with:
 
 ### 6.1 Public Pages
 
-- `/` - Landing Page
+- `/` - Landing Page (with banner carousel and auto-rotation)
 - `/resources` - Static/Downloadable content
 - `/gallery` - Image gallery from Supabase bucket
 - `/downloads` - PDFs, videos
@@ -136,6 +137,7 @@ The system follows a modern web architecture with:
 - **Question Bank**: Create, edit, delete questions
 - **Exam Schedule**: Add exams, assign to users
 - **Evaluation**: Review user answers, grade
+- **Banner Management**: Create, edit, delete website banners with image URLs, titles, descriptions, and links
 - **Transfer Tool**: Move users between centers
 - **Resources**: Upload PDFs, videos
 - **Reports**: Export reports (CSV, PDF)
@@ -413,6 +415,20 @@ The system follows a modern web architecture with:
 | action_url     | text      | Optional action URL       |
 | created_at     | timestamp | Default NOW()             |
 
+**`banners`**
+| Column         | Type      | Description               |
+|----------------|-----------|---------------------------|
+| id             | UUID      | Primary Key               |
+| title          | text      | Banner title              |
+| description    | text      | Banner description        |
+| image_url      | text      | Banner image URL          |
+| link_url       | text      | Optional link URL         |
+| is_active      | boolean   | Banner visibility status  |
+| display_order  | integer   | Display order for sorting |
+| created_by     | UUID      | FK to `profiles`          |
+| created_at     | timestamp | Default NOW()             |
+| updated_at     | timestamp | Default NOW()             |
+
 ### Database Relationships
 
 ```mermaid
@@ -434,6 +450,7 @@ erDiagram
     profiles ||--o{ books : borrows
     profiles ||--o{ certificates : receives
     exams ||--o{ certificates : generates
+    profiles ||--o{ banners : creates
 ```
 
 ---
@@ -496,6 +513,7 @@ qhlc/
 │   │   │   ├── questions/
 │   │   │   ├── exams/
 │   │   │   ├── evaluation/
+│   │   │   ├── banners/          # Banner management
 │   │   │   ├── transfer/
 │   │   │   ├── resources/
 │   │   │   └── reports/
@@ -510,6 +528,7 @@ qhlc/
 │   │   │   ├── books/
 │   │   │   ├── resources/
 │   │   │   ├── gallery/
+│   │   │   ├── banners/          # Public banner endpoint
 │   │   │   ├── certificates/
 │   │   │   ├── notifications/
 │   │   │   └── upload/
@@ -555,6 +574,7 @@ qhlc/
 │   │   │   ├── QuestionEditor.tsx
 │   │   │   ├── ExamScheduler.tsx
 │   │   │   ├── EvaluationPanel.tsx
+│   │   │   ├── BannerManager.tsx
 │   │   │   └── ReportGenerator.tsx
 │   │   │
 │   │   ├── mobile/               # Mobile-specific components
@@ -777,6 +797,7 @@ qhlc/
 - ✅ Secure file access with expiring URLs
 - ✅ Daily backup of data + storage
 - ✅ Audit logs for admin actions
+- ✅ Banner management with image optimization
 
 ### Mobile & PWA Requirements
 - ✅ PWA installable on Android/iOS devices
@@ -788,6 +809,7 @@ qhlc/
 - ✅ Biometric authentication support
 - ✅ Haptic feedback for user interactions
 - ✅ Deep linking support for direct navigation
+- ✅ Responsive banner carousel with touch navigation
 
 ---
 
@@ -799,6 +821,8 @@ qhlc/
 - Keep all logic for profile/registration modular for reuse
 - Version control schema using Supabase Migrations or CLI
 - All uploads (certificates, gallery) go to respective buckets
+- Banner images should be optimized for web (recommended: 1200x400px)
+- Banner carousel auto-rotates every 5 seconds with manual navigation controls
 
 ---
 

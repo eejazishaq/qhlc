@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     // Process exams to include user attempt information
     const processedExams = exams?.map((exam: any) => {
       const userAttempts = exam.user_exams || []
-      const completedAttempts = userAttempts.filter((attempt: any) => attempt.status === 'completed')
+      const completedAttempts = userAttempts.filter((attempt: any) => attempt.status === 'completed' || attempt.status === 'evaluated')
       const activeAttempts = userAttempts.filter((attempt: any) => 
         ['pending', 'in_progress'].includes(attempt.status)
       )

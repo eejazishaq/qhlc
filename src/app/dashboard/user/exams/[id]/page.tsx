@@ -21,7 +21,8 @@ import {
   FileText,
   User,
   Calendar,
-  Timer
+  Timer,
+  Award
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
@@ -471,16 +472,16 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
       {/* Instructions Modal */}
       {showInstructions && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center mb-4">
-              <FileText className="w-6 h-6 text-blue-500 mr-3" />
-              <h3 className="text-lg font-semibold">Exam Instructions</h3>
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 mr-2 sm:mr-3" />
+              <h3 className="text-base sm:text-lg font-semibold">Exam Instructions</h3>
             </div>
             
-            <div className="space-y-4 text-sm">
-              <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="space-y-3 sm:space-y-4 text-sm">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
                 <h4 className="font-semibold text-blue-900 mb-2">📋 Important Instructions:</h4>
-                <ul className="space-y-2 text-blue-800">
+                <ul className="space-y-1 sm:space-y-2 text-blue-800 text-xs sm:text-sm">
                   <li>• Each question has its own submit button - click it when you're satisfied with your answer</li>
                   <li>• You can review and change answers before submitting the entire exam</li>
                   <li>• Text questions require manual evaluation by instructors</li>
@@ -490,14 +491,14 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 </ul>
               </div>
 
-              <div className="bg-yellow-50 p-4 rounded-lg">
+              <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
                 <h4 className="font-semibold text-yellow-900 mb-2">⚠️ Warning:</h4>
-                <p className="text-yellow-800">
+                <p className="text-yellow-800 text-xs sm:text-sm">
                   Any attempt to cheat, copy, or use unauthorized materials will result in immediate disqualification.
                 </p>
               </div>
 
-              <div className="flex items-center justify-between text-sm text-gray-600">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-gray-600">
                 <div>
                   <p><strong>Exam:</strong> {userExam.exam.title}</p>
                   <p><strong>Duration:</strong> {userExam.exam.duration} minutes</p>
@@ -510,10 +511,10 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
+            <div className="flex justify-end mt-4 sm:mt-6">
               <Button
                 onClick={() => setShowInstructions(false)}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
               >
                 I Understand, Start Exam
               </Button>
@@ -525,31 +526,51 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 sm:py-4 space-y-3 sm:space-y-0">
+            {/* Left Section */}
+            <div className="flex items-center justify-between sm:justify-start space-x-3 sm:space-x-4">
               <Button
                 onClick={handleExit}
                 variant="outline"
                 size="sm"
+                className="text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Exit Exam
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exit Exam</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">{userExam.exam.title}</h1>
-                <p className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {questions.length}</p>
+              <div className="min-w-0 flex-1 sm:flex-none">
+                <h1 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">{userExam.exam.title}</h1>
+                <p className="text-xs sm:text-sm text-gray-600">Q{currentQuestionIndex + 1} of {questions.length}</p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              {/* Student Info */}
+            {/* Right Section */}
+            <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-4">
+              {/* Mobile Progress */}
+              <div className="sm:hidden">
+                <div className="flex items-center space-x-1">
+                  <BookOpen className="w-3 h-3 text-gray-500" />
+                  <span className="text-xs text-gray-600">
+                    {getSubmittedQuestions()}/{questions.length}
+                  </span>
+                </div>
+                <div className="w-16 bg-gray-200 rounded-full h-1 mt-1">
+                  <div 
+                    className="bg-green-600 h-1 rounded-full transition-all duration-300"
+                    style={{ width: `${(getSubmittedQuestions() / questions.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Student Info - Desktop */}
               <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
                 <User className="w-4 h-4" />
                 <span>{profile?.full_name}</span>
               </div>
 
-              {/* Progress */}
-              <div className="hidden md:block">
+              {/* Progress - Desktop */}
+              <div className="hidden sm:block">
                 <div className="flex items-center space-x-2">
                   <BookOpen className="w-4 h-4 text-gray-500" />
                   <span className="text-sm text-gray-600">
@@ -565,11 +586,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Timer */}
-              <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+              <div className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-mono font-semibold ${
                 timeLeft < 300 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
               }`}>
-                <Timer className="w-4 h-4" />
-                <span className="font-mono font-semibold">{formatTime(timeLeft)}</span>
+                <Timer className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>{formatTime(timeLeft)}</span>
               </div>
 
               {/* Fullscreen Toggle */}
@@ -577,6 +598,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 onClick={toggleFullscreen}
                 variant="outline"
                 size="sm"
+                className="hidden sm:flex"
               >
                 {fullscreenMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </Button>
@@ -585,17 +607,19 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               <Button
                 onClick={() => setShowConfirmSubmit(true)}
                 disabled={saving}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
               >
                 {saving ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Submitting...
+                    <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-1 sm:mr-2"></div>
+                    <span className="hidden sm:inline">Submitting...</span>
+                    <span className="sm:hidden">...</span>
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Submit Exam
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Submit Exam</span>
+                    <span className="sm:hidden">Submit</span>
                   </div>
                 )}
               </Button>
@@ -605,18 +629,18 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Question Navigation */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
+          {/* Question Navigation - Mobile Bottom Sheet / Desktop Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow p-4 sticky top-24">
-              <h3 className="font-semibold text-gray-900 mb-4">Question Navigation</h3>
-              <div className="grid grid-cols-5 gap-2">
+            <div className="bg-white rounded-lg shadow p-3 sm:p-4 lg:sticky lg:top-24">
+              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Question Navigation</h3>
+              <div className="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-1 sm:gap-2">
                 {questions.map((question, index) => (
                   <button
                     key={question.id}
                     onClick={() => setCurrentQuestionIndex(index)}
-                    className={`p-2 text-xs font-medium rounded border transition-colors ${
+                    className={`p-1 sm:p-2 text-xs font-medium rounded border transition-colors ${
                       index === currentQuestionIndex
                         ? 'bg-blue-600 text-white border-blue-600'
                         : submittedAnswers[question.id]
@@ -632,16 +656,16 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 ))}
               </div>
               
-              <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-                <div className="flex items-center justify-between text-sm">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 space-y-1 sm:space-y-2">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Answered:</span>
                   <span className="font-semibold">{getAnsweredQuestions()}/{questions.length}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Submitted:</span>
                   <span className="font-semibold text-green-600">{getSubmittedQuestions()}/{questions.length}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Progress:</span>
                   <span className="font-semibold">{Math.round(getProgressPercentage())}%</span>
                 </div>
@@ -652,14 +676,14 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
           {/* Question Content */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow">
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* Question Header */}
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 sm:mb-6 space-y-2 sm:space-y-0">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                       Question {currentQuestion.order_number}
                     </h2>
-                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         currentQuestion.type === 'mcq' ? 'bg-blue-100 text-blue-800' :
                         currentQuestion.type === 'truefalse' ? 'bg-green-100 text-green-800' :
@@ -667,11 +691,14 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                       }`}>
                         {currentQuestion.type.toUpperCase()}
                       </span>
-                      <span>{currentQuestion.marks} marks</span>
+                      <span className="flex items-center">
+                        <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        {currentQuestion.marks} marks
+                      </span>
                       {submittedAnswers[currentQuestion.id] && (
                         <span className="inline-flex items-center text-green-600">
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          Submitted
+                          <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          <span className="text-xs sm:text-sm">Submitted</span>
                         </span>
                       )}
                     </div>
@@ -679,20 +706,20 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 </div>
 
                 {/* Question Text */}
-                <div className="mb-6">
-                  <p className="text-gray-900 text-lg leading-relaxed">
+                <div className="mb-4 sm:mb-6">
+                  <p className="text-gray-900 text-base sm:text-lg leading-relaxed">
                     {currentQuestion.question_text}
                   </p>
                 </div>
 
                 {/* Answer Options */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {currentQuestion.type === 'mcq' && currentQuestion.options && (
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {currentQuestion.options.map((option, index) => (
                         <label
                           key={index}
-                          className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                          className={`flex items-center p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors ${
                             answers[currentQuestion.id] === option
                               ? 'border-blue-500 bg-blue-50'
                               : 'border-gray-300 hover:border-gray-400'
@@ -707,7 +734,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                             className="sr-only"
                             disabled={submittedAnswers[currentQuestion.id]}
                           />
-                          <div className={`w-4 h-4 border-2 rounded-full mr-3 flex items-center justify-center ${
+                          <div className={`w-4 h-4 border-2 rounded-full mr-3 flex items-center justify-center flex-shrink-0 ${
                             answers[currentQuestion.id] === option
                               ? 'border-blue-500 bg-blue-500'
                               : 'border-gray-300'
@@ -716,18 +743,18 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                               <div className="w-2 h-2 bg-white rounded-full"></div>
                             )}
                           </div>
-                          <span className="text-gray-900">{option}</span>
+                          <span className="text-gray-900 text-sm sm:text-base">{option}</span>
                         </label>
                       ))}
                     </div>
                   )}
 
                   {currentQuestion.type === 'truefalse' && (
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {['true', 'false'].map((option) => (
                         <label
                           key={option}
-                          className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                          className={`flex items-center p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors ${
                             answers[currentQuestion.id] === option
                               ? 'border-blue-500 bg-blue-50'
                               : 'border-gray-300 hover:border-gray-400'
@@ -742,7 +769,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                             className="sr-only"
                             disabled={submittedAnswers[currentQuestion.id]}
                           />
-                          <div className={`w-4 h-4 border-2 rounded-full mr-3 flex items-center justify-center ${
+                          <div className={`w-4 h-4 border-2 rounded-full mr-3 flex items-center justify-center flex-shrink-0 ${
                             answers[currentQuestion.id] === option
                               ? 'border-blue-500 bg-blue-500'
                               : 'border-gray-300'
@@ -751,7 +778,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                               <div className="w-2 h-2 bg-white rounded-full"></div>
                             )}
                           </div>
-                          <span className="text-gray-900 capitalize">{option}</span>
+                          <span className="text-gray-900 text-sm sm:text-base capitalize">{option}</span>
                         </label>
                       ))}
                     </div>
@@ -763,11 +790,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                         value={answers[currentQuestion.id] || ''}
                         onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestion.id]: e.target.value }))}
                         placeholder="Type your answer here..."
-                        rows={8}
-                        className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        rows={6}
+                        className="w-full p-3 sm:p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm sm:text-base"
                         disabled={submittedAnswers[currentQuestion.id]}
                       />
-                      <p className="text-sm text-gray-500 mt-2">
+                      <p className="text-xs sm:text-sm text-gray-500 mt-2">
                         This question requires manual evaluation by an instructor.
                       </p>
                     </div>
@@ -775,12 +802,12 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 </div>
 
                 {/* Question Submit Button */}
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-gray-600">
+                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+                    <div className="text-xs sm:text-sm text-gray-600">
                       {submittedAnswers[currentQuestion.id] ? (
                         <span className="text-green-600 flex items-center">
-                          <CheckCircle className="w-4 h-4 mr-1" />
+                          <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                           Question submitted successfully
                         </span>
                       ) : (
@@ -791,26 +818,26 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                     <Button
                       onClick={() => submitQuestion(currentQuestion.id)}
                       disabled={saving || submittedAnswers[currentQuestion.id] || !answers[currentQuestion.id]}
-                      className={`${
+                      className={`w-full sm:w-auto ${
                         submittedAnswers[currentQuestion.id] 
                           ? 'bg-green-100 text-green-800 cursor-not-allowed' 
                           : 'bg-blue-600 hover:bg-blue-700'
                       }`}
                     >
                       {saving ? (
-                        <div className="flex items-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Submitting...
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-1 sm:mr-2"></div>
+                          <span className="text-xs sm:text-sm">Submitting...</span>
                         </div>
                       ) : submittedAnswers[currentQuestion.id] ? (
-                        <div className="flex items-center">
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Submitted
+                        <div className="flex items-center justify-center">
+                          <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <span className="text-xs sm:text-sm">Submitted</span>
                         </div>
                       ) : (
-                        <div className="flex items-center">
-                          <Check className="w-4 h-4 mr-2" />
-                          Submit Question
+                        <div className="flex items-center justify-center">
+                          <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <span className="text-xs sm:text-sm">Submit Question</span>
                         </div>
                       )}
                     </Button>
@@ -818,18 +845,20 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                <div className="flex justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
                   <Button
                     onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
                     disabled={currentQuestionIndex === 0}
                     variant="outline"
+                    size="sm"
+                    className="text-xs sm:text-sm"
                   >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     Previous
                   </Button>
 
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-xs sm:text-sm text-gray-600">
                       {currentQuestionIndex + 1} of {questions.length}
                     </span>
                   </div>
@@ -838,9 +867,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                     onClick={() => setCurrentQuestionIndex(prev => Math.min(questions.length - 1, prev + 1))}
                     disabled={currentQuestionIndex === questions.length - 1}
                     variant="outline"
+                    size="sm"
+                    className="text-xs sm:text-sm"
                   >
                     Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
                   </Button>
                 </div>
               </div>
@@ -852,33 +883,34 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
       {/* Confirmation Modals */}
       {showConfirmSubmit && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-4 sm:p-6">
             <div className="flex items-center mb-4">
-              <AlertTriangle className="w-6 h-6 text-yellow-500 mr-3" />
-              <h3 className="text-lg font-semibold">Submit Exam</h3>
+              <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 mr-2 sm:mr-3" />
+              <h3 className="text-base sm:text-lg font-semibold">Submit Exam</h3>
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-4 text-sm sm:text-base">
               Are you sure you want to submit your exam? You won't be able to make changes after submission.
             </p>
             <div className="bg-yellow-50 p-3 rounded-lg mb-4">
-              <p className="text-sm text-yellow-800">
+              <p className="text-xs sm:text-sm text-yellow-800">
                 <strong>Submitted Questions:</strong> {getSubmittedQuestions()}/{questions.length}
               </p>
-              <p className="text-sm text-yellow-800">
+              <p className="text-xs sm:text-sm text-yellow-800">
                 <strong>Answered Questions:</strong> {getAnsweredQuestions()}/{questions.length}
               </p>
             </div>
-            <div className="flex justify-end space-x-3">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <Button
                 onClick={() => setShowConfirmSubmit(false)}
                 variant="outline"
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
               <Button
                 onClick={submitExam}
                 disabled={saving}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
               >
                 Submit Exam
               </Button>
@@ -889,24 +921,25 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
 
       {showExitConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-4 sm:p-6">
             <div className="flex items-center mb-4">
-              <AlertTriangle className="w-6 h-6 text-red-500 mr-3" />
-              <h3 className="text-lg font-semibold">Exit Exam</h3>
+              <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 mr-2 sm:mr-3" />
+              <h3 className="text-base sm:text-lg font-semibold">Exit Exam</h3>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-6 text-sm sm:text-base">
               Are you sure you want to exit the exam? Your progress will be saved, but the exam will be marked as abandoned.
             </p>
-            <div className="flex justify-end space-x-3">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <Button
                 onClick={() => setShowExitConfirm(false)}
                 variant="outline"
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
               <Button
                 onClick={confirmExit}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-red-600 hover:bg-red-700 w-full sm:w-auto"
               >
                 Exit Exam
               </Button>

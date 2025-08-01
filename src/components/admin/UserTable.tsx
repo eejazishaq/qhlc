@@ -91,6 +91,7 @@ const UserTable: React.FC<UserTableProps> = ({
       key: 'serial_number',
       label: 'Serial No',
       sortable: true,
+      className: 'w-24',
       render: (value: string) => (
         <span className="font-mono text-sm text-gray-600">{value}</span>
       )
@@ -99,6 +100,7 @@ const UserTable: React.FC<UserTableProps> = ({
       key: 'full_name',
       label: 'Name',
       sortable: true,
+      className: 'min-w-48',
       render: (value: string, user: User) => (
         <div className="flex items-center">
           <div className="flex-shrink-0 h-8 w-8">
@@ -106,9 +108,9 @@ const UserTable: React.FC<UserTableProps> = ({
               <User className="h-4 w-4 text-blue-600" />
             </div>
           </div>
-          <div className="ml-3">
-            <div className="text-sm font-medium text-gray-900">{value}</div>
-            <div className="text-sm text-gray-500">{user.mobile}</div>
+          <div className="ml-3 min-w-0 flex-1">
+            <div className="text-sm font-medium text-gray-900 truncate">{value}</div>
+            <div className="text-sm text-gray-500 truncate">{user.mobile}</div>
           </div>
         </div>
       )
@@ -117,6 +119,7 @@ const UserTable: React.FC<UserTableProps> = ({
       key: 'user_type',
       label: 'Role',
       sortable: true,
+      className: 'w-32',
       render: (value: string) => (
         <Badge variant={getRoleBadgeVariant(value) as any}>
           {getRoleDisplayName(value)}
@@ -127,27 +130,19 @@ const UserTable: React.FC<UserTableProps> = ({
       key: 'areas',
       label: 'Location',
       sortable: false,
+      className: 'min-w-40',
       render: (value: any, user: User) => (
         <div className="text-sm text-gray-900">
-          <div>{user.areas?.name || 'N/A'}</div>
-          <div className="text-gray-500">{user.centers?.name || 'N/A'}</div>
+          <div className="truncate">{user.areas?.name || 'N/A'}</div>
+          <div className="text-gray-500 truncate">{user.centers?.name || 'N/A'}</div>
         </div>
-      )
-    },
-    {
-      key: 'gender',
-      label: 'Gender',
-      sortable: true,
-      render: (value: string) => (
-        <span className="text-sm text-gray-900">
-          {value === 'male' ? 'Male' : value === 'female' ? 'Female' : value}
-        </span>
       )
     },
     {
       key: 'is_active',
       label: 'Status',
       sortable: true,
+      className: 'w-20',
       render: (value: boolean) => (
         <Badge variant={value ? 'success' : 'danger'}>
           {value ? 'Active' : 'Inactive'}
@@ -158,6 +153,7 @@ const UserTable: React.FC<UserTableProps> = ({
       key: 'created_at',
       label: 'Joined',
       sortable: true,
+      className: 'w-24',
       render: (value: string) => (
         <span className="text-sm text-gray-500">{formatDate(value)}</span>
       )
@@ -166,14 +162,14 @@ const UserTable: React.FC<UserTableProps> = ({
       key: 'actions',
       label: 'Actions',
       sortable: false,
-      className: 'text-right',
-      render: (value: any, user: User) => (
-        <div className="flex items-center justify-end space-x-2">
+      className: 'w-32 text-right',
+      render: (_: any, user: User) => (
+        <div className="flex items-center justify-end space-x-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onView(user)}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-blue-600 hover:text-blue-800 p-1"
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -181,7 +177,7 @@ const UserTable: React.FC<UserTableProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onEdit(user)}
-            className="text-green-600 hover:text-green-800"
+            className="text-green-600 hover:text-green-800 p-1"
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -189,7 +185,7 @@ const UserTable: React.FC<UserTableProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onDelete(user)}
-            className="text-red-600 hover:text-red-800"
+            className="text-red-600 hover:text-red-800 p-1"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -292,7 +288,7 @@ const UserTable: React.FC<UserTableProps> = ({
   return (
     <div>
       {/* Desktop Table View */}
-      <div className="hidden lg:block">
+      <div className="hidden xl:block">
         <Table
           columns={columns}
           data={users}
@@ -304,8 +300,8 @@ const UserTable: React.FC<UserTableProps> = ({
         />
       </div>
 
-      {/* Mobile Card View */}
-      <div className="lg:hidden">
+      {/* Tablet and Mobile Card View */}
+      <div className="xl:hidden">
         <div className="space-y-4">
           {users.map((user, index) => (
             <UserCard key={user.id || index} user={user} />

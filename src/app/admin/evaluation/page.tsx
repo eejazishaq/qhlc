@@ -12,7 +12,7 @@ interface Submission {
   user_exam_id: string
   user: {
     full_name: string
-    email: string
+    email?: string
   }
   exam: {
     title: string
@@ -89,6 +89,10 @@ export default function AdminEvaluationPage() {
 
       if (response.ok) {
         const data = await response.json()
+        console.log('===Admin Evaluation Frontend Debug===', {
+          submissions: data.submissions,
+          count: data.submissions?.length || 0
+        })
         setSubmissions(data.submissions || [])
       }
     } catch (error) {
@@ -186,69 +190,74 @@ export default function AdminEvaluationPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Exam Evaluation</h1>
-        <p className="text-gray-600">Review and grade exam submissions</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <FileText className="w-6 h-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-green-100 p-3 rounded-full">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-yellow-100 p-3 rounded-full">
-              <Clock className="w-6 h-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Evaluated</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.evaluated}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-purple-100 p-3 rounded-full">
-              <Star className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg. Score</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.averageScore}%</p>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-6">
+            <h1 className="text-2xl font-bold text-gray-900">Exam Evaluation</h1>
+            <p className="text-gray-600 mt-1">Review and grade exam submissions</p>
           </div>
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow mb-6">
-        <div className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="flex items-center">
+              <div className="bg-blue-100 p-2 rounded-full">
+                <FileText className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Pending</p>
+                <p className="text-xl font-bold text-gray-900">{stats.pending}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="flex items-center">
+              <div className="bg-green-100 p-2 rounded-full">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Completed</p>
+                <p className="text-xl font-bold text-gray-900">{stats.completed}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="flex items-center">
+              <div className="bg-yellow-100 p-2 rounded-full">
+                <Clock className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Evaluated</p>
+                <p className="text-xl font-bold text-gray-900">{stats.evaluated}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="flex items-center">
+              <div className="bg-purple-100 p-2 rounded-full">
+                <Star className="w-5 h-5 text-purple-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Avg. Score</p>
+                <p className="text-xl font-bold text-gray-900">{stats.averageScore}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="bg-white rounded-lg shadow-sm mb-6">
+          <div className="p-4">
+            <div className="space-y-4">
+              {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
@@ -256,157 +265,148 @@ export default function AdminEvaluationPage() {
                   placeholder="Search by student name or exam title..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
               </div>
-            </div>
-            <div className="flex gap-2">
-              <select 
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="evaluated">Evaluated</option>
-              </select>
-              <select 
-                value={examFilter}
-                onChange={(e) => setExamFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Exams</option>
-                {exams.map(exam => (
-                  <option key={exam.id} value={exam.title}>{exam.title}</option>
-                ))}
-              </select>
+              
+              {/* Filters */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <select 
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="completed">Completed</option>
+                  <option value="evaluated">Evaluated</option>
+                </select>
+                
+                <select 
+                  value={examFilter}
+                  onChange={(e) => setExamFilter(e.target.value)}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                >
+                  <option value="all">All Exams</option>
+                  {exams.map(exam => (
+                    <option key={exam.id} value={exam.title}>{exam.title}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Submissions Table */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Exam Submissions</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Exam
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Submitted
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Score
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loadingSubmissions ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredSubmissions.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>No submissions found</p>
-                    <p className="text-sm">Students will appear here once they submit exams</p>
-                  </td>
-                </tr>
-              ) : (
-                filteredSubmissions.map((submission) => (
-                  <tr key={submission.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
+        {/* Submissions */}
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="px-4 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">Exam Submissions</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              {filteredSubmissions.length} submission{filteredSubmissions.length !== 1 ? 's' : ''} found
+            </p>
+          </div>
+          
+          {loadingSubmissions ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 mt-2">Loading submissions...</p>
+            </div>
+          ) : filteredSubmissions.length === 0 ? (
+            <div className="p-8 text-center">
+              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500 font-medium">No submissions found</p>
+              <p className="text-sm text-gray-400 mt-1">Students will appear here once they submit exams</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {filteredSubmissions.map((submission) => (
+                <div key={submission.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                    {/* Student and Exam Info */}
+                    <div className="flex-1">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0">
                           <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                             <User className="w-5 h-5 text-blue-600" />
                           </div>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {submission.user.full_name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {submission.user.email}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-900 truncate">
+                                {submission.user.full_name}
+                              </h4>
+                              <p className="text-sm text-gray-500 truncate">
+                                {submission.user.email || 'Email not available'}
+                              </p>
+                            </div>
+                            <div className="mt-2 sm:mt-0 sm:ml-4">
+                              <p className="text-sm font-medium text-gray-900">
+                                {submission.exam.title}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {submission.exam.total_marks} marks
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{submission.exam.title}</div>
-                      <div className="text-sm text-gray-500">
-                        {submission.exam.total_marks} marks
+                    </div>
+
+                    {/* Status and Score */}
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                      <div className="flex items-center space-x-3">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          submission.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          submission.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {submission.status}
+                        </span>
+                        <div className="text-sm text-gray-900">
+                          {submission.total_score}/{submission.exam.total_marks} 
+                          <span className="text-gray-500 ml-1">
+                            ({Math.round((submission.total_score / submission.exam.total_marks) * 100)}%)
+                          </span>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      
+                      <div className="text-sm text-gray-500">
                         {new Date(submission.submitted_at).toLocaleDateString()}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(submission.submitted_at).toLocaleTimeString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        submission.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        submission.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {submission.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {submission.total_score}/{submission.exam.total_marks} 
-                      ({Math.round((submission.total_score / submission.exam.total_marks) * 100)}%)
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={() => {
-                            setSelectedSubmission(submission)
-                            setShowEvaluationModal(true)
-                          }}
-                          size="sm"
-                          variant="outline"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Evaluate
-                        </Button>
-                        <Button
-                          onClick={() => router.push(`/dashboard/user/exams/${submission.user_exam_id}/results`)}
-                          size="sm"
-                          variant="outline"
-                        >
-                          <FileText className="w-4 h-4 mr-1" />
-                          View
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={() => {
+                          setSelectedSubmission(submission)
+                          setShowEvaluationModal(true)
+                        }}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 sm:flex-none"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        <span className="hidden sm:inline">Evaluate</span>
+                        <span className="sm:hidden">View</span>
+                      </Button>
+                      <Button
+                        onClick={() => router.push(`/admin/evaluation/${submission.user_exam_id}`)}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 sm:flex-none"
+                      >
+                        <FileText className="w-4 h-4 mr-1" />
+                        <span className="hidden sm:inline">View</span>
+                        <span className="sm:hidden">Details</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

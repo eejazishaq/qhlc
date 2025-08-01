@@ -158,7 +158,10 @@ const nextConfig = {
       'supabase.co',
       '*.supabase.co',
       'lh3.googleusercontent.com',
-      'graph.facebook.com'
+      'graph.facebook.com',
+      'images.unsplash.com',
+      'plus.unsplash.com',
+      'via.placeholder.com'
     ],
     formats: ['image/webp', 'image/avif'],
   },

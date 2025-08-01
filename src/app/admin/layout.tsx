@@ -17,7 +17,8 @@ import {
   LogOut,
   Menu,
   X,
-  Image
+  Image,
+  ImageIcon
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -56,6 +57,7 @@ export default function AdminLayout({
     { name: 'Questions', href: '/admin/questions', icon: HelpCircle },
     { name: 'Exams', href: '/admin/exams', icon: FileText },
     { name: 'Evaluation', href: '/admin/evaluation', icon: CheckCircle },
+    { name: 'Banners', href: '/admin/banners', icon: ImageIcon },
     { name: 'Resources', href: '/admin/resources', icon: Upload },
     { name: 'Gallery', href: '/admin/gallery', icon: Image },
     { name: 'Transfer Tool', href: '/admin/transfer', icon: ArrowRight },
