@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Clock, Award, Play, CheckCircle, XCircle, AlertCircle, Calendar, Users } from 'lucide-react'
+import { BookOpen, Clock, Award, Play, CheckCircle, XCircle, AlertCircle, Calendar, Users, FileText } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -20,6 +20,7 @@ interface Exam {
   end_date: string
   created_by: { full_name: string }
   question_count: number
+  results_published: boolean
   user_attempts: Array<{
     id: string
     status: string
@@ -45,7 +46,7 @@ interface Exam {
 interface UserExam {
   id: string
   exam_id: string
-  status: 'pending' | 'in_progress' | 'completed' | 'abandoned'
+  status: 'pending' | 'in_progress' | 'completed' | 'evaluated' | 'published' | 'abandoned'
   started_at: string
   submitted_at?: string
   total_score: number
@@ -252,6 +253,8 @@ export default function UserExamsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800'
+      case 'evaluated': return 'bg-blue-100 text-blue-800'
+      case 'published': return 'bg-purple-100 text-purple-800'
       case 'in_progress': return 'bg-blue-100 text-blue-800'
       case 'pending': return 'bg-yellow-100 text-yellow-800'
       case 'abandoned': return 'bg-red-100 text-red-800'
@@ -343,7 +346,7 @@ export default function UserExamsPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -379,6 +382,36 @@ export default function UserExamsPage() {
                     completedExams.length
                   )}
                 </p>
+                <p className="text-xs text-gray-500">
+                  {userExams.filter(ue => 
+                    ue.status === 'published' || 
+                    (ue.status === 'completed' && ue.exam?.results_published) ||
+                    (ue.status === 'evaluated' && ue.exam?.results_published)
+                  ).length} with results
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="flex items-center">
+              <div className="bg-purple-100 p-2 sm:p-3 rounded-full">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+              </div>
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Results Available</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                  {refreshing ? (
+                    <div className="animate-pulse bg-gray-200 h-6 w-6 sm:h-8 sm:w-8 rounded"></div>
+                  ) : (
+                    userExams.filter(ue => 
+                      ue.status === 'published' || 
+                      (ue.status === 'completed' && ue.exam?.results_published) ||
+                      (ue.status === 'evaluated' && ue.exam?.results_published)
+                    ).length
+                  )}
+                </p>
+                <p className="text-xs text-gray-500">Published results</p>
               </div>
             </div>
           </div>
@@ -515,6 +548,68 @@ export default function UserExamsPage() {
           </div>
         </div>
 
+        {/* Completed Exams with Published Results */}
+        {availableExams.filter(exam => exam.completed_attempts.length > 0 && exam.results_published).length > 0 && (
+          <div className="bg-white rounded-lg shadow mb-6">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Completed Exams - Results Available</h3>
+              <p className="text-sm text-gray-600 mt-1">View your results for these completed exams</p>
+            </div>
+            <div className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {availableExams
+                  .filter(exam => exam.completed_attempts.length > 0 && exam.results_published)
+                  .map((exam) => {
+                    const completedAttempt = exam.completed_attempts[0] // Get the first completed attempt
+                    return (
+                      <div key={exam.id} className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getExamTypeColor(exam.exam_type)}`}>
+                            {getExamTypeLabel(exam.exam_type)}
+                          </span>
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            Results Available
+                          </span>
+                        </div>
+                        
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">{exam.title}</h4>
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{exam.description}</p>
+                        
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Award className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span>Score: {completedAttempt.total_score}%</span>
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span className="truncate">Completed: {formatDate(completedAttempt.submitted_at)}</span>
+                          </div>
+                        </div>
+
+                        <Button
+                          onClick={() => {
+                            // Find the user exam ID for this completed attempt
+                            const userExam = userExams.find(ue => ue.exam_id === exam.id && ue.status === 'completed')
+                            if (userExam) {
+                              router.push(`/dashboard/user/exams/${userExam.id}/results`)
+                            }
+                          }}
+                          variant="outline"
+                          className="w-full py-2 sm:py-3"
+                        >
+                          <div className="flex items-center justify-center">
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            View Results
+                          </div>
+                        </Button>
+                      </div>
+                    )
+                  })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Recent Exams */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
@@ -551,7 +646,10 @@ export default function UserExamsPage() {
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2 space-y-1 sm:space-y-0">
                             <h4 className="font-semibold text-gray-900 truncate">{userExam.exam?.title || 'Unknown Exam'}</h4>
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(userExam.status)} self-start sm:self-auto`}>
-                              {userExam.status.replace('_', ' ')}
+                              {userExam.status === 'in_progress' ? 'In Progress' : 
+                               userExam.status === 'evaluated' ? 'Evaluated' :
+                               userExam.status === 'published' ? 'Results Available' :
+                               userExam.status.replace('_', ' ')}
                             </span>
                           </div>
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm text-gray-600 space-y-1 sm:space-y-0">
@@ -562,10 +660,20 @@ export default function UserExamsPage() {
                             {userExam.total_score > 0 && (
                               <span>Score: {userExam.total_score}%</span>
                             )}
+                            {(userExam.status === 'published' || 
+                              (userExam.status === 'completed' && userExam.exam?.results_published) ||
+                              (userExam.status === 'evaluated' && userExam.exam?.results_published)) && (
+                              <span className="inline-flex items-center text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Results Available
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="flex space-x-2 self-start sm:self-auto">
-                          {['completed', 'evaluated'].includes(userExam.status) && (
+                          {(userExam.status === 'published' || 
+                            (userExam.status === 'completed' && userExam.exam?.results_published) ||
+                            (userExam.status === 'evaluated' && userExam.exam?.results_published)) && (
                             <Button
                               onClick={() => router.push(`/dashboard/user/exams/${userExam.id}/results`)}
                               variant="outline"

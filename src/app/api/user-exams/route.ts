@@ -50,7 +50,8 @@ export async function GET(request: NextRequest) {
           exam_type,
           status,
           start_date,
-          end_date
+          end_date,
+          results_published
         )
       `)
       .eq('user_id', user.id)
