@@ -23,7 +23,7 @@ import Button from '@/components/ui/Button'
 interface UserExam {
   id: string
   exam_id: string
-  status: 'pending' | 'completed' | 'evaluated'
+  status: 'pending' | 'completed' | 'evaluated' | 'published'
   started_at: string
   submitted_at?: string
   total_score: number
@@ -37,6 +37,7 @@ interface UserExam {
     total_marks: number
     passing_marks: number
     exam_type: string
+    results_published: boolean
   }
 }
 
@@ -166,6 +167,35 @@ export default function ExamResultsPage({ params }: { params: Promise<{ id: stri
     )
   }
 
+  // Check if results are published
+  if (!userExam.exam.results_published && userExam.status !== 'published') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto">
+          <Clock className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Results Not Yet Available</h3>
+          <p className="text-gray-600 mb-4">
+            Your exam has been submitted successfully. Results will be available after evaluation and publication by the instructor.
+          </p>
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
+            <p className="text-sm text-blue-800">
+              <strong>Status:</strong> {userExam.status === 'completed' ? 'Submitted' : userExam.status}
+            </p>
+            <p className="text-sm text-blue-800">
+              <strong>Submitted:</strong> {new Date(userExam.submitted_at || '').toLocaleDateString()}
+            </p>
+          </div>
+          <Button
+            onClick={() => router.push('/dashboard/user/exams')}
+            className="mt-4"
+          >
+            Back to Exams
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   const totalQuestions = userAnswers.length
   const correctAnswers = userAnswers.filter(a => a.is_correct === true).length
   const incorrectAnswers = userAnswers.filter(a => a.is_correct === false).length
@@ -179,8 +209,10 @@ export default function ExamResultsPage({ params }: { params: Promise<{ id: stri
   const timeTaken = (submitTime.getTime() - startTime.getTime()) / 1000 / 60 // minutes
 
   const getStatusIcon = () => {
-    if (userExam.status === 'evaluated') {
+    if (userExam.status === 'published') {
       return <CheckCircle className="w-6 h-6 text-green-600" />
+    } else if (userExam.status === 'evaluated') {
+      return <CheckCircle className="w-6 h-6 text-blue-600" />
     } else if (userExam.status === 'completed') {
       return <Clock className="w-6 h-6 text-yellow-600" />
     } else {
@@ -189,8 +221,10 @@ export default function ExamResultsPage({ params }: { params: Promise<{ id: stri
   }
 
   const getStatusText = () => {
-    if (userExam.status === 'evaluated') {
-      return 'Fully Evaluated'
+    if (userExam.status === 'published') {
+      return 'Results Published'
+    } else if (userExam.status === 'evaluated') {
+      return 'Evaluated (Not Published)'
     } else if (userExam.status === 'completed') {
       return pendingEvaluation > 0 ? 'Pending Manual Evaluation' : 'Auto-Graded'
     } else {

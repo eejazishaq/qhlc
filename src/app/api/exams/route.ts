@@ -142,7 +142,8 @@ export async function POST(request: NextRequest) {
       exam_type,
       status = 'draft',
       start_date,
-      end_date
+      end_date,
+      shuffle_questions = false
     } = body
 
     // Validate required fields
@@ -188,6 +189,7 @@ export async function POST(request: NextRequest) {
         status,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
+        shuffle_questions,
         created_by: user.id
       })
       .select()

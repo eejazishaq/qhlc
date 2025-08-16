@@ -112,12 +112,14 @@ export async function POST(
     }
 
     // Return exam data without correct answers
+    let questions = exam.questions?.map((q: any) => ({
+      ...q,
+      correct_answer: undefined // Hide correct answers
+    })) || []
+
     const examData = {
       ...exam,
-      questions: exam.questions?.map((q: any) => ({
-        ...q,
-        correct_answer: undefined // Hide correct answers
-      }))
+      questions: questions
     }
 
     return NextResponse.json({ 

@@ -53,6 +53,7 @@ interface UserExam {
     total_marks: number
     passing_marks: number
     exam_type: string
+    shuffle_questions: boolean
   }
 }
 
@@ -73,7 +74,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
   const [questions, setQuestions] = useState<Question[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [submittedAnswers, setSubmittedAnswers] = useState<Record<string, boolean>>({})
   const [loadingExam, setLoadingExam] = useState(true)
   const [saving, setSaving] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number>(0)
@@ -163,6 +163,24 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
     }
   }, [timeLeft, warningShown])
 
+  const shuffleQuestions = (questions: Question[]) => {
+    if (!questions || questions.length === 0) return questions
+    
+    // Create a copy of the questions array
+    const shuffledQuestions = [...questions]
+    
+    // Fisher-Yates shuffle algorithm
+    for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+    }
+    
+    console.log('Questions shuffled on frontend. Original order:', questions.map(q => q.order_number))
+    console.log('Shuffled order:', shuffledQuestions.map(q => q.order_number))
+    
+    return shuffledQuestions
+  }
+
   const fetchExamData = async () => {
     try {
       setLoadingExam(true)
@@ -205,7 +223,17 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
       }
 
       const questionsData = await questionsResponse.json()
-      setQuestions(questionsData.questions || [])
+      let fetchedQuestions = questionsData.questions || []
+      
+      // Apply frontend shuffling if enabled for this exam
+      if (userExamData.exam.shuffle_questions && fetchedQuestions.length > 0) {
+        console.log('Shuffle enabled for exam:', userExamData.exam.title)
+        fetchedQuestions = shuffleQuestions(fetchedQuestions)
+      } else {
+        console.log('Shuffle disabled for exam:', userExamData.exam.title)
+      }
+      
+      setQuestions(fetchedQuestions)
 
       // Load existing answers
       await loadExistingAnswers()
@@ -236,15 +264,12 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
       if (response.ok) {
         const data = await response.json()
         const existingAnswers: Record<string, string> = {}
-        const submittedAnswersMap: Record<string, boolean> = {}
         
         data.user_answers.forEach((answer: any) => {
           existingAnswers[answer.question_id] = answer.answer_text
-          submittedAnswersMap[answer.question_id] = true // If answer exists, it's submitted
         })
         
         setAnswers(existingAnswers)
-        setSubmittedAnswers(submittedAnswersMap)
       }
     } catch (error) {
       console.error('Error loading existing answers:', error)
@@ -299,31 +324,36 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const submitQuestion = async (questionId: string) => {
-    try {
-      const answer = answers[questionId]
-      if (!answer || answer.trim() === '') {
-        alert('Please provide an answer before submitting this question.')
-        return
-      }
+  const saveCurrentAnswer = async () => {
+    const currentQuestion = questions[currentQuestionIndex]
+    if (!currentQuestion) return
 
-      setSaving(true)
-      
-      // Save the answer first
-      await saveAnswer(questionId, answer)
-      
-      // Mark as submitted
-      setSubmittedAnswers(prev => ({ ...prev, [questionId]: true }))
-      
-      // Show success message
-      alert('✅ Question submitted successfully!')
-      
-    } catch (error) {
-      console.error('Error submitting question:', error)
-      alert('Failed to submit question. Please try again.')
-    } finally {
-      setSaving(false)
+    const answer = answers[currentQuestion.id] || ''
+    await saveAnswer(currentQuestion.id, answer)
+  }
+
+  const goToNextQuestion = async () => {
+    // Save current answer before moving to next question
+    await saveCurrentAnswer()
+    
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1)
     }
+  }
+
+  const goToPreviousQuestion = async () => {
+    // Save current answer before moving to previous question
+    await saveCurrentAnswer()
+    
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1)
+    }
+  }
+
+  const goToQuestion = async (index: number) => {
+    // Save current answer before moving to another question
+    await saveCurrentAnswer()
+    setCurrentQuestionIndex(index)
   }
 
   // Auto-save all answers
@@ -393,10 +423,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
 
   const getAnsweredQuestions = () => {
     return Object.keys(answers).length
-  }
-
-  const getSubmittedQuestions = () => {
-    return Object.keys(submittedAnswers).length
   }
 
   const getProgressPercentage = () => {
@@ -482,8 +508,8 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
                 <h4 className="font-semibold text-blue-900 mb-2">📋 Important Instructions:</h4>
                 <ul className="space-y-1 sm:space-y-2 text-blue-800 text-xs sm:text-sm">
-                  <li>• Each question has its own submit button - click it when you're satisfied with your answer</li>
-                  <li>• You can review and change answers before submitting the entire exam</li>
+                  <li>• You can navigate between questions freely - your answers are saved automatically</li>
+                  <li>• You can change your answers at any time during the exam</li>
                   <li>• Text questions require manual evaluation by instructors</li>
                   <li>• Your answers are auto-saved every 30 seconds</li>
                   <li>• The exam will auto-submit when time expires</li>
@@ -552,13 +578,13 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-center space-x-1">
                   <BookOpen className="w-3 h-3 text-gray-500" />
                   <span className="text-xs text-gray-600">
-                    {getSubmittedQuestions()}/{questions.length}
+                    {getAnsweredQuestions()}/{questions.length}
                   </span>
                 </div>
                 <div className="w-16 bg-gray-200 rounded-full h-1 mt-1">
                   <div 
                     className="bg-green-600 h-1 rounded-full transition-all duration-300"
-                    style={{ width: `${(getSubmittedQuestions() / questions.length) * 100}%` }}
+                    style={{ width: `${(getAnsweredQuestions() / questions.length) * 100}%` }}
                   ></div>
                 </div>
               </div>
@@ -574,13 +600,13 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-center space-x-2">
                   <BookOpen className="w-4 h-4 text-gray-500" />
                   <span className="text-sm text-gray-600">
-                    {getSubmittedQuestions()}/{questions.length} submitted
+                    {getAnsweredQuestions()}/{questions.length} answered
                   </span>
                 </div>
                 <div className="w-32 bg-gray-200 rounded-full h-2 mt-1">
                   <div 
                     className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(getSubmittedQuestions() / questions.length) * 100}%` }}
+                    style={{ width: `${(getAnsweredQuestions() / questions.length) * 100}%` }}
                   ></div>
                 </div>
               </div>
@@ -639,17 +665,15 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 {questions.map((question, index) => (
                   <button
                     key={question.id}
-                    onClick={() => setCurrentQuestionIndex(index)}
+                    onClick={() => goToQuestion(index)}
                     className={`p-1 sm:p-2 text-xs font-medium rounded border transition-colors ${
                       index === currentQuestionIndex
                         ? 'bg-blue-600 text-white border-blue-600'
-                        : submittedAnswers[question.id]
-                        ? 'bg-green-100 text-green-800 border-green-300'
                         : answers[question.id]
-                        ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                        ? 'bg-green-100 text-green-800 border-green-300'
                         : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
                     }`}
-                    title={`Question ${index + 1}${submittedAnswers[question.id] ? ' (Submitted)' : answers[question.id] ? ' (Answered)' : ' (Not answered)'}`}
+                    title={`Question ${index + 1}${answers[question.id] ? ' (Answered)' : ' (Not answered)'}`}
                   >
                     {index + 1}
                   </button>
@@ -660,10 +684,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Answered:</span>
                   <span className="font-semibold">{getAnsweredQuestions()}/{questions.length}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-gray-600">Submitted:</span>
-                  <span className="font-semibold text-green-600">{getSubmittedQuestions()}/{questions.length}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Progress:</span>
@@ -695,12 +715,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                         <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         {currentQuestion.marks} marks
                       </span>
-                      {submittedAnswers[currentQuestion.id] && (
-                        <span className="inline-flex items-center text-green-600">
-                          <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          <span className="text-xs sm:text-sm">Submitted</span>
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -732,7 +746,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                             checked={answers[currentQuestion.id] === option}
                             onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestion.id]: e.target.value }))}
                             className="sr-only"
-                            disabled={submittedAnswers[currentQuestion.id]}
                           />
                           <div className={`w-4 h-4 border-2 rounded-full mr-3 flex items-center justify-center flex-shrink-0 ${
                             answers[currentQuestion.id] === option
@@ -767,7 +780,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                             checked={answers[currentQuestion.id] === option}
                             onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestion.id]: e.target.value }))}
                             className="sr-only"
-                            disabled={submittedAnswers[currentQuestion.id]}
                           />
                           <div className={`w-4 h-4 border-2 rounded-full mr-3 flex items-center justify-center flex-shrink-0 ${
                             answers[currentQuestion.id] === option
@@ -792,7 +804,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                         placeholder="Type your answer here..."
                         rows={6}
                         className="w-full p-3 sm:p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm sm:text-base"
-                        disabled={submittedAnswers[currentQuestion.id]}
                       />
                       <p className="text-xs sm:text-sm text-gray-500 mt-2">
                         This question requires manual evaluation by an instructor.
@@ -805,39 +816,23 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
                     <div className="text-xs sm:text-sm text-gray-600">
-                      {submittedAnswers[currentQuestion.id] ? (
-                        <span className="text-green-600 flex items-center">
-                          <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          Question submitted successfully
-                        </span>
-                      ) : (
-                        <span>Click submit when you're satisfied with your answer</span>
-                      )}
+                      <span>Your answer will be saved automatically when you navigate between questions</span>
                     </div>
                     
                     <Button
-                      onClick={() => submitQuestion(currentQuestion.id)}
-                      disabled={saving || submittedAnswers[currentQuestion.id] || !answers[currentQuestion.id]}
-                      className={`w-full sm:w-auto ${
-                        submittedAnswers[currentQuestion.id] 
-                          ? 'bg-green-100 text-green-800 cursor-not-allowed' 
-                          : 'bg-blue-600 hover:bg-blue-700'
-                      }`}
+                      onClick={() => saveCurrentAnswer()}
+                      disabled={saving || !answers[currentQuestion.id]}
+                      className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
                     >
                       {saving ? (
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-1 sm:mr-2"></div>
-                          <span className="text-xs sm:text-sm">Submitting...</span>
-                        </div>
-                      ) : submittedAnswers[currentQuestion.id] ? (
-                        <div className="flex items-center justify-center">
-                          <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                          <span className="text-xs sm:text-sm">Submitted</span>
+                          <span className="text-xs sm:text-sm">Saving...</span>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center">
-                          <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                          <span className="text-xs sm:text-sm">Submit Question</span>
+                          <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <span className="text-xs sm:text-sm">Save Answer</span>
                         </div>
                       )}
                     </Button>
@@ -847,7 +842,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 {/* Navigation Buttons */}
                 <div className="flex justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
                   <Button
-                    onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+                    onClick={goToPreviousQuestion}
                     disabled={currentQuestionIndex === 0}
                     variant="outline"
                     size="sm"
@@ -864,7 +859,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                   </div>
 
                   <Button
-                    onClick={() => setCurrentQuestionIndex(prev => Math.min(questions.length - 1, prev + 1))}
+                    onClick={goToNextQuestion}
                     disabled={currentQuestionIndex === questions.length - 1}
                     variant="outline"
                     size="sm"
@@ -893,10 +888,10 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
             </p>
             <div className="bg-yellow-50 p-3 rounded-lg mb-4">
               <p className="text-xs sm:text-sm text-yellow-800">
-                <strong>Submitted Questions:</strong> {getSubmittedQuestions()}/{questions.length}
+                <strong>Answered Questions:</strong> {getAnsweredQuestions()}/{questions.length}
               </p>
               <p className="text-xs sm:text-sm text-yellow-800">
-                <strong>Answered Questions:</strong> {getAnsweredQuestions()}/{questions.length}
+                <strong>Total Questions:</strong> {questions.length}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">

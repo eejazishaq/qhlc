@@ -150,7 +150,8 @@ export async function PUT(
       exam_type,
       status,
       start_date,
-      end_date
+      end_date,
+      shuffle_questions
     } = body
 
     // Build update object with only provided fields
@@ -164,6 +165,7 @@ export async function PUT(
     if (status !== undefined) updateData.status = status
     if (start_date !== undefined) updateData.start_date = new Date(start_date).toISOString()
     if (end_date !== undefined) updateData.end_date = new Date(end_date).toISOString()
+    if (shuffle_questions !== undefined) updateData.shuffle_questions = shuffle_questions
 
     // Validate exam type if provided
     if (exam_type && !['mock', 'regular', 'final'].includes(exam_type)) {

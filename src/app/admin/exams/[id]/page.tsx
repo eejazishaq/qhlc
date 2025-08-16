@@ -217,6 +217,15 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
             
             <div className="flex space-x-3">
               <Button
+                onClick={() => router.push(`/admin/exams/${params.id}/evaluation`)}
+                variant="outline"
+                size="sm"
+                className="bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Evaluate
+              </Button>
+              <Button
                 onClick={handleEditExam}
                 variant="outline"
                 size="sm"

@@ -109,13 +109,13 @@ export async function POST(
       })
     }
 
-    // Update user exam status
+    // Update user exam status to completed (not evaluated - requires admin review)
     const { data: updatedUserExam, error: updateError } = await supabase
       .from('user_exams')
       .update({
-        status: 'completed',
+        status: 'completed', // Keep as completed, not evaluated
         submitted_at: new Date().toISOString(),
-        total_score: totalScore
+        total_score: totalScore // Store auto-calculated score for reference
       })
       .eq('id', id)
       .select()
@@ -130,7 +130,7 @@ export async function POST(
       userExam: updatedUserExam,
       totalScore,
       evaluatedAnswers,
-      message: 'Exam submitted successfully'
+      message: 'Exam submitted successfully. Results will be available after evaluation.'
     })
   } catch (error) {
     console.error('Error in POST /api/user-exams/[id]/submit:', error)

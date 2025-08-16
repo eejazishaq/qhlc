@@ -49,7 +49,9 @@ export async function GET(
           exam_type,
           status,
           start_date,
-          end_date
+          end_date,
+          shuffle_questions,
+          results_published
         )
       `)
       .eq('id', id)

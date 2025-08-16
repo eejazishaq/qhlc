@@ -9,7 +9,7 @@ CREATE TYPE user_type AS ENUM ('user', 'coordinator', 'convener', 'admin', 'supe
 CREATE TYPE gender AS ENUM ('male', 'female');
 CREATE TYPE exam_type AS ENUM ('mock', 'regular', 'final');
 CREATE TYPE exam_status AS ENUM ('draft', 'active', 'inactive');
-CREATE TYPE user_exam_status AS ENUM ('pending', 'completed', 'evaluated');
+CREATE TYPE user_exam_status AS ENUM ('pending', 'completed', 'evaluated', 'published');
 CREATE TYPE attendance_status AS ENUM ('present', 'absent', 'late');
 CREATE TYPE progress_status AS ENUM ('memorized', 'reviewing', 'learning');
 CREATE TYPE book_status AS ENUM ('issued', 'returned', 'overdue');
@@ -97,6 +97,10 @@ CREATE TABLE exams (
     status exam_status DEFAULT 'draft',
     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
     end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    shuffle_questions BOOLEAN DEFAULT false,
+    results_published BOOLEAN DEFAULT false,
+    published_at TIMESTAMP WITH TIME ZONE,
+    published_by UUID REFERENCES profiles(id),
     created_by UUID REFERENCES profiles(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

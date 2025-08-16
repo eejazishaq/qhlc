@@ -5,7 +5,6 @@ Login page
 Registration page
 - 
 
-
 Dashboard
 - 
 
@@ -16,24 +15,22 @@ Classes and exam center
 Course 12th running
 Books and video-link
 
-Question
--
-
 
 
 
 Exams
-- suffle question option for the admin
+- Suffle question option for the admin
 - change the answer after the submit question also
 - submit question should be with next btn click
 - Submit question btn title should be save answer
+
 - after the exam submission the result should not be genererate it should generate after the evaluate and publish the results
+
 - Evaluate Submission redesign based on the question - change the solution
-- 
+ 
 
 Banner
 - upload files option in Banner
-
 
 - Area
 - Exam center

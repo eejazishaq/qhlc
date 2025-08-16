@@ -33,7 +33,8 @@ export default function CreateExamPage() {
     exam_type: 'mock',
     status: 'draft',
     start_date: '',
-    end_date: ''
+    end_date: '',
+    shuffle_questions: false
   })
 
   // Questions
@@ -421,6 +422,21 @@ export default function CreateExamPage() {
                     onChange={(e) => handleExamDataChange('end_date', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Shuffle Questions
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={examData.shuffle_questions}
+                    onChange={(e) => handleExamDataChange('shuffle_questions', e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">
+                    Shuffle questions order for students
+                  </span>
                 </div>
               </div>
             </div>
