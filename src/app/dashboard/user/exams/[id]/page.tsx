@@ -403,8 +403,9 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
 
       const data = await response.json()
       
-      // Redirect to results page
-      router.push(`/dashboard/user/exams/${id}/results`)
+      // Show success message and redirect to main exams page
+      alert('✅ Exam submitted successfully!\n\nYour exam has been submitted and is now being evaluated by instructors. Results will be available on the main exams page once they are published.\n\nYou will be redirected to the exams page.')
+      router.push('/dashboard/user/exams')
     } catch (error) {
       console.error('Error submitting exam:', error)
       alert('Failed to submit exam. Please try again.')

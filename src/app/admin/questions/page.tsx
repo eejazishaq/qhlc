@@ -161,21 +161,21 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b">
+          <h2 className="text-lg sm:text-xl font-semibold">
             {question ? 'Edit Question' : 'Add New Question'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 p-1"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Exam Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -184,7 +184,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
             <select
               value={formData.exam_id}
               onChange={(e) => setFormData(prev => ({ ...prev, exam_id: e.target.value }))}
-              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.exam_id ? 'border-red-500' : 'border-gray-300'
               }`}
             >
@@ -208,7 +208,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
             <textarea
               value={formData.question_text}
               onChange={(e) => setFormData(prev => ({ ...prev, question_text: e.target.value }))}
-              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.question_text ? 'border-red-500' : 'border-gray-300'
               }`}
               rows={3}
@@ -220,7 +220,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
           </div>
 
           {/* Question Type and Order */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Question Type *
@@ -233,7 +233,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
                   correct_answer: '',
                   options: e.target.value === 'mcq' ? ['', '', '', ''] : []
                 }))}
-                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="mcq">Multiple Choice</option>
                 <option value="truefalse">True/False</option>
@@ -250,7 +250,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
                 min="1"
                 value={formData.order_number}
                 onChange={(e) => setFormData(prev => ({ ...prev, order_number: parseInt(e.target.value) || 1 }))}
-                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.order_number ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="1"
@@ -271,7 +271,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
               min="1"
               value={formData.marks}
               onChange={(e) => setFormData(prev => ({ ...prev, marks: parseInt(e.target.value) || 1 }))}
-              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.marks ? 'border-red-500' : 'border-gray-300'
               }`}
             />
@@ -292,7 +292,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
                     type="text"
                     value={option}
                     onChange={(e) => updateOption(index, e.target.value)}
-                    className={`flex-1 p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`flex-1 p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.options ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder={`Option ${index + 1}`}
@@ -300,8 +300,8 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
                   <button
                     type="button"
                     onClick={() => removeOption(index)}
-                    className="p-2 text-red-500 hover:text-red-700"
-                    disabled={formData.options?.length === 2}
+                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+                    title="Remove option"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -310,7 +310,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
               <button
                 type="button"
                 onClick={addOption}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="mt-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md border border-blue-200 hover:border-blue-300"
               >
                 + Add Option
               </button>
@@ -320,8 +320,8 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
             </div>
           )}
 
-          {/* True/False Options */}
-          {formData.type === 'truefalse' && (
+          {/* Correct Answer */}
+          {(formData.type === 'mcq' || formData.type === 'truefalse') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Correct Answer *
@@ -329,30 +329,7 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
               <select
                 value={formData.correct_answer}
                 onChange={(e) => setFormData(prev => ({ ...prev, correct_answer: e.target.value }))}
-                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.correct_answer ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Select correct answer</option>
-                <option value="true">True</option>
-                <option value="false">False</option>
-              </select>
-              {errors.correct_answer && (
-                <p className="text-red-500 text-sm mt-1">{errors.correct_answer}</p>
-              )}
-            </div>
-          )}
-
-          {/* MCQ Correct Answer */}
-          {formData.type === 'mcq' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Correct Answer *
-              </label>
-              <select
-                value={formData.correct_answer}
-                onChange={(e) => setFormData(prev => ({ ...prev, correct_answer: e.target.value }))}
-                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.correct_answer ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
@@ -373,16 +350,16 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
 
           {/* Text Question Note */}
           {formData.type === 'text' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 sm:p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <HelpCircle className="h-5 w-5 text-blue-400" />
+                  <HelpCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                 </div>
-                <div className="ml-3">
+                <div className="ml-2 sm:ml-3">
                   <h3 className="text-sm font-medium text-blue-800">
                     Text Question
                   </h3>
-                  <div className="mt-2 text-sm text-blue-700">
+                  <div className="mt-1 sm:mt-2 text-sm text-blue-700">
                     <p>Text questions are manually evaluated by administrators. No correct answer is required.</p>
                   </div>
                 </div>
@@ -391,18 +368,18 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
           )}
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="w-full sm:w-auto px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {loading ? (
                 <>
@@ -652,16 +629,16 @@ export default function AdminQuestionsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Page Header */}
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Question Bank</h1>
-          <p className="text-gray-600">Create and manage exam questions</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Question Bank</h1>
+          <p className="text-sm sm:text-base text-gray-600">Create and manage exam questions</p>
         </div>
         <button 
           onClick={handleAddQuestion}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center"
+          className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Question
@@ -669,60 +646,60 @@ export default function AdminQuestionsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <HelpCircle className="w-6 h-6 text-blue-600" />
+            <div className="bg-blue-100 p-2 sm:p-3 rounded-full">
+              <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Questions</p>
-              <p className="text-2xl font-bold text-gray-900">{questions.length}</p>
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Total Questions</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{questions.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="bg-green-100 p-3 rounded-full">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="bg-green-100 p-2 sm:p-3 rounded-full">
+              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">MCQ Questions</p>
-              <p className="text-2xl font-bold text-gray-900">{mcqCount}</p>
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">MCQ Questions</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{mcqCount}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="bg-yellow-100 p-3 rounded-full">
-              <FileText className="w-6 h-6 text-yellow-600" />
+            <div className="bg-yellow-100 p-2 sm:p-3 rounded-full">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Text Questions</p>
-              <p className="text-2xl font-bold text-gray-900">{textCount}</p>
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Text Questions</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{textCount}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="bg-purple-100 p-3 rounded-full">
-              <FileText className="w-6 h-6 text-purple-600" />
+            <div className="bg-purple-100 p-2 sm:p-3 rounded-full">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Exams</p>
-              <p className="text-2xl font-bold text-gray-900">{examCount}</p>
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Exams</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{examCount}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow mb-6">
-        <div className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+      <div className="bg-white rounded-lg shadow mb-4 sm:mb-6">
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -735,7 +712,7 @@ export default function AdminQuestionsPage() {
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <select 
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
@@ -763,29 +740,96 @@ export default function AdminQuestionsPage() {
 
       {/* Questions Table */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Questions ({filteredQuestions.length})</h3>
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Questions ({filteredQuestions.length})</h3>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* Mobile Card View */}
+        <div className="block sm:hidden">
+          {loadingQuestions ? (
+            <div className="p-6 text-center">
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            </div>
+          ) : filteredQuestions.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              <HelpCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>No questions found</p>
+              <p className="text-sm">Create your first question to get started</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {filteredQuestions.map((question) => (
+                <div key={question.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
+                        {question.question_text}
+                      </p>
+                      <div className="flex items-center space-x-3 text-xs text-gray-500">
+                        <span className="font-medium">{getExamTitle(question.exam_id)}</span>
+                        <span className="capitalize">{getExamType(question.exam_id)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-3">
+                      <button
+                        onClick={() => handleEditQuestion(question)}
+                        className="text-blue-600 hover:text-blue-900 p-1"
+                        title="Edit question"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteQuestion(question.id)}
+                        disabled={deleteLoading === question.id}
+                        className="text-red-600 hover:text-red-900 p-1 disabled:opacity-50"
+                        title="Delete question"
+                      >
+                        {deleteLoading === question.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {getQuestionTypeLabel(question.type)}
+                      </span>
+                      <span className="text-xs text-gray-500">Order: {question.order_number}</span>
+                      <span className="text-xs text-gray-500">Marks: {question.marks}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Question
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Exam
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Order
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Marks
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -793,7 +837,7 @@ export default function AdminQuestionsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loadingQuestions ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
+                  <td colSpan={6} className="px-4 sm:px-6 py-4 text-center">
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                     </div>
@@ -801,7 +845,7 @@ export default function AdminQuestionsPage() {
                 </tr>
               ) : filteredQuestions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 sm:px-6 py-8 text-center text-gray-500">
                     <HelpCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p>No questions found</p>
                     <p className="text-sm">Create your first question to get started</p>
@@ -810,31 +854,31 @@ export default function AdminQuestionsPage() {
               ) : (
                 filteredQuestions.map((question) => (
                   <tr key={question.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <div className="max-w-xs">
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {question.question_text}
                         </p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <div>
                         <p className="text-sm font-medium text-gray-900">{getExamTitle(question.exam_id)}</p>
                         <p className="text-xs text-gray-500 capitalize">{getExamType(question.exam_id)}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {getQuestionTypeLabel(question.type)}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <span className="text-sm text-gray-900">{question.order_number}</span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <span className="text-sm text-gray-900">{question.marks}</span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleEditQuestion(question)}
@@ -862,39 +906,6 @@ export default function AdminQuestionsPage() {
               )}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Bulk Import</h3>
-              <p className="text-gray-600">Import questions from CSV</p>
-            </div>
-            <FileText className="w-8 h-8 text-blue-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Question Preview</h3>
-              <p className="text-gray-600">Preview questions in exam format</p>
-            </div>
-            <Eye className="w-8 h-8 text-green-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Exam Management</h3>
-              <p className="text-gray-600">Manage exams and schedules</p>
-            </div>
-            <HelpCircle className="w-8 h-8 text-purple-600" />
-          </div>
         </div>
       </div>
 

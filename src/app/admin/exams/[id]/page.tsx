@@ -199,7 +199,7 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 space-y-4 sm:space-y-0">
             <div className="flex items-center space-x-4">
               <Button
                 onClick={() => router.push('/admin/exams')}
@@ -215,7 +215,7 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
               </div>
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <Button
                 onClick={() => router.push(`/admin/exams/${params.id}/evaluation`)}
                 variant="outline"
@@ -253,12 +253,12 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
           {/* Exam Details */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow p-6 sticky top-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Exam Information</h2>
+          <div className="lg:col-span-3 order-2 lg:order-1">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6 lg:sticky lg:top-8">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Exam Information</h2>
               
               <div className="space-y-4">
                 <div>
@@ -327,19 +327,19 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
           </div>
 
           {/* Questions */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-1 lg:order-2">
             <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Questions ({exam.questions?.length || 0})</h2>
+              <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Questions ({exam.questions?.length || 0})</h2>
               </div>
               
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {exam.questions && exam.questions.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {exam.questions.map((question, index) => (
-                      <div key={question.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center space-x-3">
+                      <div key={question.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 space-y-2 sm:space-y-0">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                             <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
                               Q{index + 1}
                             </span>
@@ -359,8 +359,8 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
                         {question.type === 'mcq' && question.options && (
                           <div className="space-y-2 mb-3">
                             {question.options.map((option, optIndex) => (
-                              <div key={optIndex} className="flex items-center space-x-2">
-                                <span className="text-sm text-gray-500">{String.fromCharCode(65 + optIndex)}.</span>
+                              <div key={optIndex} className="flex items-start space-x-2">
+                                <span className="text-sm text-gray-500 mt-0.5">{String.fromCharCode(65 + optIndex)}.</span>
                                 <span className={`text-sm ${
                                   option === question.correct_answer ? 'text-green-600 font-medium' : 'text-gray-700'
                                 }`}>
@@ -395,8 +395,8 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="text-center py-6 sm:py-8">
+                    <FileText className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900">No questions</h3>
                     <p className="mt-1 text-sm text-gray-500">This exam doesn't have any questions yet.</p>
                   </div>

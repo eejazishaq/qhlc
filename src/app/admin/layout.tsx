@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   Image,
-  ImageIcon
+  ImageIcon,
+  BookOpen
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -57,6 +58,8 @@ export default function AdminLayout({
     { name: 'Questions', href: '/admin/questions', icon: HelpCircle },
     { name: 'Exams', href: '/admin/exams', icon: FileText },
     { name: 'Evaluation', href: '/admin/evaluation', icon: CheckCircle },
+    { name: 'Classes', href: '/admin/classes', icon: FileText },
+    { name: 'Books', href: '/admin/books', icon: BookOpen },
     { name: 'Banners', href: '/admin/banners', icon: ImageIcon },
     { name: 'Resources', href: '/admin/resources', icon: Upload },
     { name: 'Gallery', href: '/admin/gallery', icon: Image },

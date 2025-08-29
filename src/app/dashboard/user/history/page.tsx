@@ -482,17 +482,35 @@ export default function ExamHistoryPage() {
                          </span>
                        </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {exam.total_score}/{exam.exam?.total_marks || 0}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {exam.exam?.total_marks ? Math.round((exam.total_score / exam.exam.total_marks) * 100) : 0}%
-                        </div>
+                        {(exam.status === 'published' || 
+                          (exam.status === 'completed' && exam.exam?.results_published) ||
+                          (exam.status === 'evaluated' && exam.exam?.results_published)) ? (
+                          <>
+                            <div className="text-sm text-gray-900">
+                              {exam.total_score}/{exam.exam?.total_marks || 0}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {exam.exam?.total_marks ? Math.round((exam.total_score / exam.exam.total_marks) * 100) : 0}%
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-sm text-gray-500">
+                            Results not yet published
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`text-sm font-medium ${getPassFailColor(exam.total_score, exam.exam?.passing_marks || 0)}`}>
-                          {getPassFailStatus(exam.total_score, exam.exam?.passing_marks || 0)}
-                        </span>
+                        {(exam.status === 'published' || 
+                          (exam.status === 'completed' && exam.exam?.results_published) ||
+                          (exam.status === 'evaluated' && exam.exam?.results_published)) ? (
+                          <span className={`text-sm font-medium ${getPassFailColor(exam.total_score, exam.exam?.passing_marks || 0)}`}>
+                            {getPassFailStatus(exam.total_score, exam.exam?.passing_marks || 0)}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-500">
+                            Pending
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {exam.submitted_at ? formatDate(exam.submitted_at) : 'Not submitted'}

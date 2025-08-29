@@ -553,7 +553,7 @@ export default function UserExamsPage() {
           <div className="bg-white rounded-lg shadow mb-6">
             <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">Completed Exams - Results Available</h3>
-              <p className="text-sm text-gray-600 mt-1">View your results for these completed exams</p>
+              <p className="text-sm text-gray-600 mt-1">Results are only shown after they are published by instructors</p>
             </div>
             <div className="p-4 sm:p-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
@@ -610,10 +610,29 @@ export default function UserExamsPage() {
           </div>
         )}
 
+        {/* Completed Exams Awaiting Results */}
+        {availableExams.filter(exam => exam.completed_attempts.length > 0 && !exam.results_published).length > 0 && (
+          <div className="bg-white rounded-lg shadow mb-6">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Completed Exams - Awaiting Results</h3>
+              <p className="text-sm text-gray-600 mt-1">Your completed exams are being evaluated. Results will appear above once published by instructors.</p>
+            </div>
+            <div className="p-6 text-center">
+              <Clock className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+              <p className="text-gray-600">Results are being processed and will be available soon.</p>
+            </div>
+          </div>
+        )}
+
         {/* Recent Exams */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Exams</h3>
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Recent Exams</h3>
+                <p className="text-sm text-gray-600 mt-1">Results are only shown after they are published by instructors</p>
+              </div>
+            </div>
           </div>
           <div className="p-4 sm:p-6">
             {loadingUserExams ? (
@@ -657,7 +676,9 @@ export default function UserExamsPage() {
                             {userExam.submitted_at && (
                               <span className="truncate">Submitted: {formatDate(userExam.submitted_at)}</span>
                             )}
-                            {userExam.total_score > 0 && (
+                            {userExam.total_score > 0 && (userExam.status === 'published' || 
+                              (userExam.status === 'completed' && userExam.exam?.results_published) ||
+                              (userExam.status === 'evaluated' && userExam.exam?.results_published)) && (
                               <span>Score: {userExam.total_score}%</span>
                             )}
                             {(userExam.status === 'published' || 

@@ -456,38 +456,6 @@ export default function AdminExamsPage() {
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-        <div className="bg-white rounded-lg shadow p-4 lg:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base lg:text-lg font-semibold text-gray-900">Question Bank</h3>
-              <p className="text-sm lg:text-base text-gray-600">Manage exam questions</p>
-            </div>
-            <FileText className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-4 lg:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base lg:text-lg font-semibold text-gray-900">Exam Schedule</h3>
-              <p className="text-sm lg:text-base text-gray-600">Schedule upcoming exams</p>
-            </div>
-            <Calendar className="w-6 h-6 lg:w-8 lg:h-8 text-green-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-4 lg:p-6 sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base lg:text-lg font-semibold text-gray-900">Results</h3>
-              <p className="text-sm lg:text-base text-gray-600">View exam results</p>
-            </div>
-            <Eye className="w-6 h-6 lg:w-8 lg:h-8 text-purple-600" />
-          </div>
-        </div>
-      </div>
     </div>
   )
 } 
