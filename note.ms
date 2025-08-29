@@ -1,9 +1,5 @@
 
 
-- other users settings
-- Public pageg (resource, gallary, classess, contact us, About us)
-
-=========
 
 Login page
 - Email account or Register number
@@ -11,6 +7,10 @@ Login page
 
 Registration page
 
+=========
+
+- other users settings
+- Public pageg (resource, gallary, classess, contact us, About us)
 
 ======
 

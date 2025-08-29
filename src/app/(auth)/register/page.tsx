@@ -27,12 +27,31 @@ export default function RegisterPage() {
   })
   const [formError, setFormError] = useState<string | null>(null)
   const router = useRouter()
-  const { signUp, loading } = useAuth()
+  const { signUp, loading, user, profile } = useAuth()
 
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Handle redirects based on user type after successful registration
+  useEffect(() => {
+    if (user && profile && !loading) {
+      console.log('User registered and authenticated, profile loaded:', { 
+        email: user.email, 
+        userType: profile.user_type 
+      })
+      
+      // Redirect based on user type
+      if (profile.user_type === 'admin' || profile.user_type === 'super_admin') {
+        console.log('Admin user detected, redirecting to admin dashboard')
+        router.push('/admin')
+      } else {
+        console.log('Regular user detected, redirecting to user dashboard')
+        router.push('/dashboard/user')
+      }
+    }
+  }, [user, profile, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -114,8 +133,8 @@ export default function RegisterPage() {
     if (error) {
       setFormError(error)
     } else {
-      // Redirect to user dashboard after successful registration
-      router.push('/dashboard/user')
+      console.log('Registration successful, redirect will be handled automatically')
+      // The redirect will be handled by useEffect in the component
     }
   }
 
@@ -300,7 +319,7 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
                   <div>
                     <label htmlFor="fatherName" className="block text-sm font-medium text-gray-700 mb-2">
-                      Father's Name *
+                      Father&apos;s Name *
                     </label>
                     <input
                       id="fatherName"
@@ -310,7 +329,7 @@ export default function RegisterPage() {
                       value={formData.fatherName}
                       onChange={handleInputChange}
                       className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter father's name"
+                      placeholder="Enter father&apos;s name"
                     />
                   </div>
 

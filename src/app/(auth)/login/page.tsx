@@ -1,35 +1,69 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, BookOpen } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, BookOpen, Hash } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [loginMethod, setLoginMethod] = useState<'email' | 'serial'>('email')
   const [formData, setFormData] = useState({
     email: '',
+    serialNumber: '',
     password: ''
   })
   const [formError, setFormError] = useState<string | null>(null)
   const router = useRouter()
-  const { signIn, loading } = useAuth()
+  const { signIn, signInWithSerial, loading, user, profile } = useAuth()
+
+  // Handle redirects based on user type after successful authentication
+  useEffect(() => {
+    if (user && profile && !loading) {
+      console.log('User authenticated, profile loaded:', { 
+        email: user.email, 
+        userType: profile.user_type 
+      })
+      
+      // Redirect based on user type
+      if (profile.user_type === 'admin' || profile.user_type === 'super_admin') {
+        console.log('Admin user detected, redirecting to admin dashboard')
+        router.push('/admin')
+      } else {
+        console.log('Regular user detected, redirecting to user dashboard')
+        router.push('/dashboard/user')
+      }
+    }
+  }, [user, profile, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
     
-    console.log('Login form submitted with:', { email: formData.email })
-    
-    const { error } = await signIn(formData.email, formData.password)
-    if (error) {
-      console.error('Login error:', error)
-      setFormError(error)
+    if (loginMethod === 'email') {
+      console.log('Email login form submitted with:', { email: formData.email })
+      
+      const { error } = await signIn(formData.email, formData.password)
+      if (error) {
+        console.error('Login error:', error)
+        setFormError(error)
+      } else {
+        console.log('Login successful, checking user type for redirect')
+        // The redirect will be handled by useEffect in the component
+      }
     } else {
-      console.log('Login successful, redirecting to dashboard')
-      // Redirect to dashboard (role-based can be added later)
-      router.push('/dashboard')
+      console.log('Serial number login form submitted with:', { serialNumber: formData.serialNumber })
+      
+      // For serial number login, we only need serial number and password
+      const { error } = await signInWithSerial(formData.serialNumber, formData.password)
+      if (error) {
+        console.error('Serial number login error:', error)
+        setFormError(error)
+      } else {
+        console.log('Serial number login successful, checking user type for redirect')
+        // The redirect will be handled by useEffect in the component
+      }
     }
   }
 
@@ -37,6 +71,17 @@ export default function LoginPage() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    })
+  }
+
+  const handleLoginMethodChange = (method: 'email' | 'serial') => {
+    setLoginMethod(method)
+    setFormError(null)
+    // Clear form data when switching methods
+    setFormData({
+      email: '',
+      serialNumber: '',
+      password: ''
     })
   }
 
@@ -65,25 +110,84 @@ export default function LoginPage() {
         {/* Login Form */}
         {!loading && (
           <div className="bg-white rounded-2xl shadow-xl p-8">
+            {/* Login Method Toggle */}
+            <div className="mb-8">
+              <div className="bg-gray-100 p-1 rounded-xl inline-flex w-full">
+                <button
+                  type="button"
+                  onClick={() => handleLoginMethodChange('email')}
+                  className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out ${
+                    loginMethod === 'email'
+                      ? 'bg-white text-blue-600 shadow-sm transform scale-105'
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <Mail className={`h-4 w-4 ${loginMethod === 'email' ? 'text-blue-600' : 'text-gray-500'}`} />
+                    <span>Email Login</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleLoginMethodChange('serial')}
+                  className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out ${
+                    loginMethod === 'serial'
+                      ? 'bg-white text-blue-600 shadow-sm transform scale-105'
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <Hash className={`h-4 w-4 ${loginMethod === 'serial' ? 'text-blue-600' : 'text-gray-500'}`} />
+                    <span>Serial Number</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Serial Number Login Info */}
+            {loginMethod === 'serial' && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Hash className="w-3 h-3 text-blue-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-800 font-medium">
+                      Serial Number Login
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Enter your serial number and password to sign in.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Field */}
+              {/* Email or Serial Number Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
+                <label htmlFor={loginMethod === 'email' ? 'email' : 'serialNumber'} className="block text-sm font-medium text-gray-700 mb-2">
+                  {loginMethod === 'email' ? 'Email Address' : 'Serial Number'}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    {loginMethod === 'email' ? (
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Hash className="h-5 w-5 text-gray-400" />
+                    )}
                   </div>
                   <input
-                    id="email"
-                    name="email"
-                    type="email"
+                    id={loginMethod === 'email' ? 'email' : 'serialNumber'}
+                    name={loginMethod === 'email' ? 'email' : 'serialNumber'}
+                    type={loginMethod === 'email' ? 'email' : 'text'}
                     required
-                    value={formData.email}
+                    value={loginMethod === 'email' ? formData.email : formData.serialNumber}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter your email"
+                    placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter your serial number'}
                   />
                 </div>
               </div>
@@ -178,8 +282,10 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Social Login Buttons */}
+            {/* Social Login Buttons - Commented out Google login */}
             <div className="mt-6 space-y-3">
+              {/* Google login button commented out as requested */}
+              {/*
               <button
                 type="button"
                 className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
@@ -192,12 +298,13 @@ export default function LoginPage() {
                 </svg>
                 Continue with Google
               </button>
+              */}
             </div>
 
             {/* Sign Up Link */}
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link
                   href="/register"
                   className="font-medium text-blue-600 hover:text-blue-500"

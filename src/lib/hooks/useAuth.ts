@@ -149,6 +149,120 @@ export function useAuth() {
     }
   }
 
+  const signInWithSerial = async (serialNumber: string, password: string) => {
+    try {
+      console.log('SignIn with serial called with serial:', serialNumber)
+      
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        return { error: 'Supabase not configured. Please set up your environment variables.' }
+      }
+
+      setAuthState(prev => ({ ...prev, loading: true, error: null }))
+      
+      // First, verify that the serial number exists and get the profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, mobile, user_type, serial_number')
+        .eq('serial_number', serialNumber.trim())
+        .single()
+
+      if (profileError || !profileData) {
+        console.error('Profile lookup error:', profileError)
+        setAuthState(prev => ({ 
+          ...prev, 
+          error: 'Invalid credentials', 
+          loading: false 
+        }))
+        return { error: 'Invalid credentials' }
+      }
+
+      // Since we can't directly get the email from the client side,
+      // we'll need to use a different approach. Let me try to use the API endpoint
+      // to get the email and then authenticate
+      
+      try {
+        const response = await fetch('/api/auth/serial-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ serialNumber, password }),
+        })
+
+        const result = await response.json()
+
+        if (!response.ok || !result.success) {
+          console.error('Serial login API error:', result.error)
+          setAuthState(prev => ({ 
+            ...prev, 
+            error: result.error || 'Invalid credentials', 
+            loading: false 
+          }))
+          return { error: result.error || 'Invalid credentials' }
+        }
+
+        // Now that we have the email, sign in with Supabase auth
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: result.email,
+          password
+        })
+
+        console.log('Serial number signIn result:', { success: !error, error: error?.message })
+
+        if (error) {
+          console.error('Serial number signIn error:', error)
+          setAuthState(prev => ({ 
+            ...prev, 
+            error: 'Invalid credentials', 
+            loading: false 
+          }))
+          return { error: 'Invalid credentials' }
+        }
+
+        if (data.user) {
+          console.log('Serial number signIn successful for user:', data.user.email)
+          // Set the user and session immediately
+          setAuthState(prev => ({ 
+            ...prev, 
+            user: data.user, 
+            session: data.session,
+            loading: false 
+          }))
+          
+          // Fetch the profile
+          await fetchProfile(data.user.id)
+        } else {
+          // No user returned, set loading to false
+          setAuthState(prev => ({ 
+            ...prev, 
+            loading: false 
+          }))
+        }
+
+        return { data }
+        
+      } catch (apiError) {
+        console.error('API call error:', apiError)
+        setAuthState(prev => ({ 
+          ...prev, 
+          error: 'Authentication failed', 
+          loading: false 
+        }))
+        return { error: 'Authentication failed' }
+      }
+      
+    } catch (error) {
+      console.error('Serial number signIn catch error:', error)
+      const errorMessage = 'Invalid credentials'
+      setAuthState(prev => ({ 
+        ...prev, 
+        error: errorMessage, 
+        loading: false 
+      }))
+      return { error: errorMessage }
+    }
+  }
+
   const signIn = async (email: string, password: string) => {
     try {
       console.log('SignIn called with email:', email)
@@ -388,6 +502,7 @@ export function useAuth() {
   return {
     ...authState,
     signIn,
+    signInWithSerial,
     signUp,
     signOut,
     updateProfile,
