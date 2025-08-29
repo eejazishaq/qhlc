@@ -1,13 +1,7 @@
 
-- Banner
-- upload files option in Banner
-- Add audio in resources
-
-
-- Books
 
 - other users settings
-- Public forms
+- Public pageg (resource, gallary, classess, contact us, About us)
 
 =========
 

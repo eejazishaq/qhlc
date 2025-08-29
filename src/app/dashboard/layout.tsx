@@ -164,12 +164,12 @@ export default function DashboardLayout({
             icon: FileText,
             current: pathname.startsWith('/dashboard/user/exams')
           },
-          {
-            name: 'Mock Exams',
-            href: '/dashboard/user/mock-exams',
-            icon: BookMarked,
-            current: pathname.startsWith('/dashboard/user/mock-exams')
-          },
+          // {
+          //   name: 'Mock Exams',
+          //   href: '/dashboard/user/mock-exams',
+          //   icon: BookMarked,
+          //   current: pathname.startsWith('/dashboard/user/mock-exams')
+          // },
           {
             name: 'History',
             href: '/dashboard/user/history',

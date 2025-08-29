@@ -220,18 +220,19 @@ export default function ExamHistoryPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6 space-y-4 sm:space-y-0">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Exam History</h1>
-              <p className="text-gray-600">View your past exam results and performance</p>
-              <p className="text-sm text-blue-600 mt-1">Only shows results that have been published by instructors</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Exam History</h1>
+              <p className="text-sm sm:text-base text-gray-600">View your past exam results and performance</p>
+              <p className="text-xs sm:text-sm text-blue-600 mt-1">Only shows results that have been published by instructors</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <Button
                 onClick={refreshData}
                 variant="outline"
                 size="sm"
                 disabled={refreshing}
+                className="w-full sm:w-auto"
               >
                 {refreshing ? (
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -241,7 +242,7 @@ export default function ExamHistoryPage() {
                 Refresh
               </Button>
               <div className="bg-purple-100 p-2 rounded-full">
-                <Clock className="w-6 h-6 text-purple-600" />
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
             </div>
           </div>
@@ -251,15 +252,15 @@ export default function ExamHistoryPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <BookOpen className="w-6 h-6 text-blue-600" />
+              <div className="bg-blue-100 p-2 sm:p-3 rounded-full">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Published Results</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Published Results</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">
                   {loadingHistory ? '...' : statistics.totalExams}
                 </p>
                 <p className="text-xs text-gray-500">Only published results</p>
@@ -267,14 +268,14 @@ export default function ExamHistoryPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center">
-              <div className="bg-green-100 p-3 rounded-full">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="bg-green-100 p-2 sm:p-3 rounded-full">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Passed</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Passed</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">
                   {loadingHistory ? '...' : statistics.passedExams}
                 </p>
                 <p className="text-xs text-gray-500">
@@ -284,14 +285,14 @@ export default function ExamHistoryPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center">
-              <div className="bg-red-100 p-3 rounded-full">
-                <XCircle className="w-6 h-6 text-red-600" />
+              <div className="bg-red-100 p-2 sm:p-3 rounded-full">
+                <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Failed</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Failed</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">
                   {loadingHistory ? '...' : statistics.failedExams}
                 </p>
                 <p className="text-xs text-gray-500">Published results only</p>
@@ -299,14 +300,14 @@ export default function ExamHistoryPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center">
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <Award className="w-6 h-6 text-yellow-600" />
+              <div className="bg-yellow-100 p-2 sm:p-3 rounded-full">
+                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Average Score</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Average Score</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">
                   {loadingHistory ? '...' : `${statistics.averageScore}%`}
                 </p>
                 <p className="text-xs text-gray-500">Published results only</p>
@@ -316,17 +317,18 @@ export default function ExamHistoryPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
+        <div className="bg-white rounded-lg shadow mb-4 sm:mb-6">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Filters</h3>
                 <p className="text-sm text-gray-600">Filter published exam results</p>
               </div>
               <Button
                 onClick={() => setShowFilters(!showFilters)}
                 variant="outline"
                 size="sm"
+                className="w-full sm:w-auto"
               >
                 <Filter className="w-4 h-4 mr-2" />
                 {showFilters ? 'Hide' : 'Show'} Filters
@@ -335,8 +337,8 @@ export default function ExamHistoryPage() {
           </div>
           
           {showFilters && (
-            <div className="px-6 py-4 border-t border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="px-4 sm:px-6 py-4 border-t border-gray-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <select
@@ -350,7 +352,6 @@ export default function ExamHistoryPage() {
                     <option value="published">Published</option>
                   </select>
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Exam Type</label>
                   <select
@@ -359,12 +360,11 @@ export default function ExamHistoryPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">All Types</option>
-                    <option value="mock">Mock Exams</option>
-                    <option value="regular">Regular Exams</option>
-                    <option value="final">Final Exams</option>
+                    <option value="mock">Mock Exam</option>
+                    <option value="regular">Regular Exam</option>
+                    <option value="final">Final Exam</option>
                   </select>
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
                   <input
@@ -374,7 +374,6 @@ export default function ExamHistoryPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
                   <input
@@ -385,20 +384,14 @@ export default function ExamHistoryPage() {
                   />
                 </div>
               </div>
-              
-              <div className="flex justify-end mt-4 space-x-3">
+              <div className="mt-4 flex flex-col sm:flex-row gap-2">
                 <Button
                   onClick={clearFilters}
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto"
                 >
                   Clear Filters
-                </Button>
-                <Button
-                  onClick={fetchExamHistory}
-                  size="sm"
-                >
-                  Apply Filters
                 </Button>
               </div>
             </div>
@@ -406,14 +399,106 @@ export default function ExamHistoryPage() {
         </div>
 
         {/* Exam History Table */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Published Exam Results</h3>
+        <div className="bg-white rounded-lg shadow mb-4 sm:mb-6">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Published Exam Results</h3>
             <p className="text-sm text-gray-600 mt-1">
               {examHistory.length} published result{examHistory.length !== 1 ? 's' : ''} found
             </p>
           </div>
-          <div className="overflow-x-auto">
+          
+          {/* Mobile Card View */}
+          <div className="block sm:hidden">
+            {loadingHistory ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : examHistory.length === 0 ? (
+              <div className="text-center text-gray-500 py-8 px-4">
+                <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>No published results found</p>
+                <p className="text-sm">Your exam results will appear here once they are published by the instructor</p>
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg max-w-md mx-auto">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> Results are only visible after they have been evaluated and published by an administrator.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {examHistory.map((exam) => (
+                  <div key={exam.id} className="p-4 hover:bg-gray-50">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900 mb-1">
+                          {exam.exam?.title || 'Unknown Exam'}
+                        </div>
+                        <div className="text-sm text-gray-500 mb-2">
+                          Duration: {formatDuration(exam.exam?.duration || 0)}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getExamTypeColor(exam.exam?.exam_type || '')}`}>
+                            {getExamTypeLabel(exam.exam?.exam_type || '')}
+                          </span>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(exam.status)}`}>
+                            {exam.status === 'evaluated' ? 'Evaluated' :
+                             exam.status === 'published' ? 'Results Available' :
+                             exam.status === 'completed' ? 'Completed' : exam.status}
+                          </span>
+                        </div>
+                      </div>
+                      {(exam.status === 'published' || 
+                        (exam.status === 'completed' && exam.exam?.results_published) ||
+                        (exam.status === 'evaluated' && exam.exam?.results_published)) && (
+                        <Link
+                          href={`/dashboard/user/exams/${exam.id}/results`}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4 mr-2" />
+                            View
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                    
+                    {(exam.status === 'published' || 
+                      (exam.status === 'completed' && exam.exam?.results_published) ||
+                      (exam.status === 'evaluated' && exam.exam?.results_published)) ? (
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-500">Score:</span>
+                          <div className="text-gray-900 font-medium">
+                            {exam.total_score}/{exam.exam?.total_marks || 0}
+                          </div>
+                          <div className="text-gray-500">
+                            {exam.exam?.total_marks ? Math.round((exam.total_score / exam.exam.total_marks) * 100) : 0}%
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Result:</span>
+                          <div className={`font-medium ${getPassFailColor(exam.total_score, exam.exam?.passing_marks || 0)}`}>
+                            {getPassFailStatus(exam.total_score, exam.exam?.passing_marks || 0)}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500">
+                        Results not yet published
+                      </div>
+                    )}
+                    
+                    <div className="mt-3 text-sm text-gray-500">
+                      Completed: {exam.submitted_at ? formatDate(exam.submitted_at) : 'Not submitted'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             {loadingHistory ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -433,25 +518,25 @@ export default function ExamHistoryPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Exam
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Type
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Score
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Result
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Completed
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -459,7 +544,7 @@ export default function ExamHistoryPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {examHistory.map((exam) => (
                     <tr key={exam.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
                             {exam.exam?.title || 'Unknown Exam'}
@@ -469,19 +554,19 @@ export default function ExamHistoryPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getExamTypeColor(exam.exam?.exam_type || '')}`}>
                           {getExamTypeLabel(exam.exam?.exam_type || '')}
                         </span>
                       </td>
-                                             <td className="px-6 py-4 whitespace-nowrap">
-                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(exam.status)}`}>
-                           {exam.status === 'evaluated' ? 'Evaluated' :
-                            exam.status === 'published' ? 'Results Available' :
-                            exam.status === 'completed' ? 'Completed' : exam.status}
-                         </span>
-                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(exam.status)}`}>
+                          {exam.status === 'evaluated' ? 'Evaluated' :
+                           exam.status === 'published' ? 'Results Available' :
+                           exam.status === 'completed' ? 'Completed' : exam.status}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                         {(exam.status === 'published' || 
                           (exam.status === 'completed' && exam.exam?.results_published) ||
                           (exam.status === 'evaluated' && exam.exam?.results_published)) ? (
@@ -499,7 +584,7 @@ export default function ExamHistoryPage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                         {(exam.status === 'published' || 
                           (exam.status === 'completed' && exam.exam?.results_published) ||
                           (exam.status === 'evaluated' && exam.exam?.results_published)) ? (
@@ -512,10 +597,10 @@ export default function ExamHistoryPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {exam.submitted_at ? formatDate(exam.submitted_at) : 'Not submitted'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {(exam.status === 'published' || 
                           (exam.status === 'completed' && exam.exam?.results_published) ||
                           (exam.status === 'evaluated' && exam.exam?.results_published)) && (
@@ -540,11 +625,11 @@ export default function ExamHistoryPage() {
 
         {/* Performance Chart */}
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Performance Trend (Last 6 Months)</h3>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Performance Trend (Last 6 Months)</h3>
             <p className="text-sm text-gray-600 mt-1">Your average score progression over time</p>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {performanceTrend.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
                 <TrendingUp className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -554,8 +639,8 @@ export default function ExamHistoryPage() {
             ) : (
               <div className="space-y-4">
                 {performanceTrend.map((trend, index) => (
-                  <div key={trend.month} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-4">
+                  <div key={trend.month} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg space-y-3 sm:space-y-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                       <div className="text-sm font-medium text-gray-900">
                         {new Date(trend.month + '-01').toLocaleDateString('en-US', { 
                           month: 'long', 
@@ -566,7 +651,7 @@ export default function ExamHistoryPage() {
                         {trend.examCount} exam{trend.examCount !== 1 ? 's' : ''}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                       <span className="text-lg font-semibold text-gray-900">
                         {trend.averageScore}%
                       </span>

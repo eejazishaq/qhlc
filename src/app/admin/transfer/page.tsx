@@ -218,58 +218,18 @@ export default function AdminTransferPage() {
           <h1 className="text-2xl font-bold text-gray-900">Transfer Tool</h1>
           <p className="text-gray-600">Move users between exam centers</p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={fetchTransferData}
             disabled={loadingData}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center"
           >
             {loadingData ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
             ) : (
-              <Search className="w-4 h-4" />
+              <Search className="w-4 h-4 mr-2" />
             )}
             <span>Refresh</span>
-          </button>
-          <button
-            onClick={async () => {
-              try {
-                const response = await authenticatedFetch('/api/admin/transfer/test')
-                const result = await response.json()
-                console.log('Test API result:', result)
-                if (result.success) {
-                  alert('Test successful! Check console for details.')
-                } else {
-                  alert(`Test failed: ${result.error}`)
-                }
-              } catch (err) {
-                console.error('Test API error:', err)
-                alert('Test API error - check console')
-              }
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Test API
-          </button>
-          <button
-            onClick={async () => {
-              try {
-                const response = await authenticatedFetch('/api/admin/transfer/simple-test')
-                const result = await response.json()
-                console.log('Simple test result:', result)
-                if (result.success) {
-                  alert(`Simple test successful! Found ${result.data.totalProfiles} profiles. Check console for details.`)
-                } else {
-                  alert(`Simple test failed: ${result.error}`)
-                }
-              } catch (err) {
-                console.error('Simple test error:', err)
-                alert('Simple test error - check console')
-              }
-            }}
-            className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Simple Test
           </button>
         </div>
       </div>
@@ -311,15 +271,15 @@ export default function AdminTransferPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <Users className="w-6 h-6 text-blue-600" />
+            <div className="bg-blue-100 p-2 sm:p-3 rounded-full">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Total Users</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">
                 {loadingData ? '...' : transferData?.stats.users.totalUsers || 0}
               </p>
               {transferData && (
@@ -331,59 +291,55 @@ export default function AdminTransferPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="bg-green-100 p-3 rounded-full">
-              <Building className="w-6 h-6 text-green-600" />
+            <div className="bg-green-100 p-2 sm:p-3 rounded-full">
+              <Building className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Exam Centers</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {loadingData ? '...' : transferData?.stats.centers.activeCenters || 0}
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Total Centers</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">
+                {loadingData ? '...' : transferData?.stats.centers.totalCenters || 0}
               </p>
               {transferData && (
                 <p className="text-xs text-gray-600">
-                  {transferData.stats.centers.totalCenters} total
+                  {transferData.stats.centers.activeCenters} active
                 </p>
               )}
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="bg-yellow-100 p-3 rounded-full">
-              <ArrowRight className="w-6 h-6 text-yellow-600" />
+            <div className="bg-purple-100 p-2 sm:p-3 rounded-full">
+              <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Transfers This Month</p>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Total Areas</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">
+                {loadingData ? '...' : transferData?.stats.areas.totalAreas || 0}
+              </p>
+              {transferData && (
+                <p className="text-xs text-gray-600">
+                  {transferData.stats.areas.activeAreas} active
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="flex items-center">
+            <div className="bg-orange-100 p-2 sm:p-3 rounded-full">
+              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+            </div>
+            <div className="ml-3 sm:ml-4">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Transfers</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">
                 {loadingData ? '...' : transferData?.stats.transfers.transfersThisMonth || 0}
               </p>
-              {transferData && (
-                <p className="text-xs text-gray-600">
-                  Profile updates
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-purple-100 p-3 rounded-full">
-              <MapPin className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Areas</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {loadingData ? '...' : transferData?.stats.areas.activeAreas || 0}
-              </p>
-              {transferData && (
-                <p className="text-xs text-gray-600">
-                  {transferData.stats.areas.totalAreas} total
-                </p>
-              )}
+              <p className="text-xs text-gray-600">This month</p>
             </div>
           </div>
         </div>
@@ -391,9 +347,9 @@ export default function AdminTransferPage() {
 
       {/* Transfer Form */}
       <div className="bg-white rounded-lg shadow mb-6">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Transfer User</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Transfer User</h3>
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select User
@@ -411,9 +367,11 @@ export default function AdminTransferPage() {
                 ))}
               </select>
             </div>
+            
             <div className="flex items-center justify-center">
               <ArrowRight className="w-6 h-6 text-gray-400" />
             </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select New Center
@@ -431,6 +389,7 @@ export default function AdminTransferPage() {
                 ))}
               </select>
             </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Reason (Optional)
@@ -448,12 +407,12 @@ export default function AdminTransferPage() {
             <button 
               onClick={handleTransfer}
               disabled={transferring || !selectedUserId || !selectedCenterId}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {transferring ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
               ) : (
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 mr-2" />
               )}
               <span>{transferring ? 'Transferring...' : 'Transfer User'}</span>
             </button>
@@ -462,9 +421,9 @@ export default function AdminTransferPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow mb-6">
-        <div className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+      <div className="bg-white rounded-lg shadow mb-4 sm:mb-6">
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -490,7 +449,7 @@ export default function AdminTransferPage() {
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <select 
                 value={selectedCenterFilter}
                 onChange={(e) => setSelectedCenterFilter(e.target.value)}
@@ -499,7 +458,7 @@ export default function AdminTransferPage() {
                 <option value="">All Centers</option>
                 {transferData?.centers.map((center) => (
                   <option key={center.id} value={center.id}>
-                    {center.name} - {center.area_name || 'No Area'}
+                    {center.name}
                   </option>
                 ))}
               </select>
@@ -522,26 +481,106 @@ export default function AdminTransferPage() {
 
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Users</h3>
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Users ({transferData?.users.length || 0})</h3>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* Mobile Card View */}
+        <div className="block sm:hidden">
+          {loadingData ? (
+            <div className="p-6 text-center">
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            </div>
+          ) : transferData?.users.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>No users found</p>
+              <p className="text-sm">Users will appear here once they register</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {transferData?.users.map((user) => (
+                <div key={user.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <User className="h-5 w-5 text-blue-600" />
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <div className="text-sm font-medium text-gray-900">{user.full_name}</div>
+                        <div className="text-sm text-gray-500">{user.mobile}</div>
+                        <div className="text-xs text-gray-400">{user.user_type}</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSelectedUserId(user.id)
+                        setSelectedCenterId('')
+                      }}
+                      className="text-blue-600 hover:text-blue-900 font-medium text-sm"
+                    >
+                      Transfer
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Center:</span>
+                      <div className="text-gray-900">
+                        {user.center_name ? (
+                          <span className="text-green-600 font-medium">{user.center_name}</span>
+                        ) : (
+                          <span className="text-red-500 italic">No Center</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Area:</span>
+                      <div className="text-gray-900">
+                        {user.area_name ? (
+                          <span className="text-green-600 font-medium">{user.area_name}</span>
+                        ) : (
+                          <span className="text-red-500 italic">No Area</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      user.is_active 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {user.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Current Center
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Area
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Current Area
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -549,7 +588,7 @@ export default function AdminTransferPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loadingData ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center">
+                  <td colSpan={5} className="px-4 sm:px-6 py-4 text-center">
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                     </div>
@@ -557,7 +596,7 @@ export default function AdminTransferPage() {
                 </tr>
               ) : transferData?.users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={5} className="px-4 sm:px-6 py-8 text-center text-gray-500">
                     <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p>No users found</p>
                     <p className="text-sm">Users will appear here once they register</p>
@@ -566,7 +605,7 @@ export default function AdminTransferPage() {
               ) : (
                 transferData?.users.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -580,7 +619,7 @@ export default function AdminTransferPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         {user.center_name ? (
                           <span className="text-green-600 font-medium">{user.center_name}</span>
@@ -589,7 +628,7 @@ export default function AdminTransferPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         {user.area_name ? (
                           <span className="text-green-600 font-medium">{user.area_name}</span>
@@ -598,7 +637,7 @@ export default function AdminTransferPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         user.is_active 
                           ? 'bg-green-100 text-green-800' 
@@ -607,7 +646,7 @@ export default function AdminTransferPage() {
                         {user.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
                         onClick={() => {
                           setSelectedUserId(user.id)
@@ -627,13 +666,13 @@ export default function AdminTransferPage() {
         
         {/* Pagination */}
         {transferData && transferData.pagination.pages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
+          <div className="px-4 sm:px-6 py-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+              <div className="text-sm text-gray-700 text-center sm:text-left">
                 Showing page {transferData.pagination.page} of {transferData.pagination.pages} 
                 ({transferData.pagination.total} total users)
               </div>
-              <div className="flex space-x-2">
+              <div className="flex justify-center sm:justify-end space-x-2">
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
