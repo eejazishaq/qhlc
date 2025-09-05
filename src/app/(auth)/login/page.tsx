@@ -112,35 +112,37 @@ export default function LoginPage() {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             {/* Login Method Toggle */}
             <div className="mb-8">
-              <div className="bg-gray-100 p-1 rounded-xl inline-flex w-full">
-                <button
-                  type="button"
-                  onClick={() => handleLoginMethodChange('email')}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out ${
-                    loginMethod === 'email'
-                      ? 'bg-white text-blue-600 shadow-sm transform scale-105'
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-center space-x-2">
-                    <Mail className={`h-4 w-4 ${loginMethod === 'email' ? 'text-blue-600' : 'text-gray-500'}`} />
-                    <span>Email Login</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleLoginMethodChange('serial')}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out ${
-                    loginMethod === 'serial'
-                      ? 'bg-white text-blue-600 shadow-sm transform scale-105'
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-center space-x-2">
-                    <Hash className={`h-4 w-4 ${loginMethod === 'serial' ? 'text-blue-600' : 'text-gray-500'}`} />
-                    <span>Serial Number</span>
-                  </div>
-                </button>
+              <div className="bg-gray-100 p-1 rounded-xl w-full">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0">
+                  <button
+                    type="button"
+                    onClick={() => handleLoginMethodChange('email')}
+                    className={`flex-1 py-3 px-4 sm:px-6 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out ${
+                      loginMethod === 'email'
+                        ? 'bg-white text-blue-600 shadow-sm transform scale-105'
+                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center space-x-2">
+                      <Mail className={`h-4 w-4 ${loginMethod === 'email' ? 'text-blue-600' : 'text-gray-500'}`} />
+                      <span className="whitespace-nowrap">Email Login</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLoginMethodChange('serial')}
+                    className={`flex-1 py-3 px-4 sm:px-6 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out ${
+                      loginMethod === 'serial'
+                        ? 'bg-white text-blue-600 shadow-sm transform scale-105'
+                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center space-x-2">
+                      <Hash className={`h-4 w-4 ${loginMethod === 'serial' ? 'text-blue-600' : 'text-gray-500'}`} />
+                      <span className="whitespace-nowrap">Serial Number</span>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
 

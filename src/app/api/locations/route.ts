@@ -3,6 +3,42 @@ import { createClient } from '@supabase/supabase-js'
 
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const isPublic = (searchParams.get('public') || '').toLowerCase() === 'true'
+
+    if (isPublic) {
+      // Public mode: return active areas and centers without auth
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+
+      const [{ data: areas, error: areasError }, { data: centers, error: centersError }] = await Promise.all([
+        supabase
+          .from('areas')
+          .select('id, name')
+          .eq('is_active', true)
+          .order('name'),
+        supabase
+          .from('exam_centers')
+          .select('id, name, area_id')
+          .eq('is_active', true)
+          .order('name')
+      ])
+
+      if (areasError) {
+        console.error('Error fetching areas (public):', areasError)
+        return NextResponse.json({ error: 'Failed to fetch areas' }, { status: 500 })
+      }
+      if (centersError) {
+        console.error('Error fetching centers (public):', centersError)
+        return NextResponse.json({ error: 'Failed to fetch centers' }, { status: 500 })
+      }
+
+      return NextResponse.json({ areas: areas || [], centers: centers || [] })
+    }
+
+    // Existing admin-protected behavior
     // Get the authorization header
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

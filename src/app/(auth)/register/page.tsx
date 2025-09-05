@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, User, Phone, BookOpen, ChevronDown } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Phone, BookOpen, Users, Baby, Copy, Check } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { supabase } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
   const [mounted, setMounted] = useState(false)
@@ -26,12 +27,42 @@ export default function RegisterPage() {
     examCenter: ''
   })
   const [formError, setFormError] = useState<string | null>(null)
+  const [successData, setSuccessData] = useState<{ serialNumber: string; email: string } | null>(null)
+  const [copiedField, setCopiedField] = useState<'serial' | 'email' | null>(null)
+  const [areas, setAreas] = useState<Array<{ id: string; name: string }>>([])
+  const [centers, setCenters] = useState<Array<{ id: string; name: string; area_id: string }>>([])
+  const [loadingLocations, setLoadingLocations] = useState(false)
   const router = useRouter()
-  const { signUp, loading, user, profile } = useAuth()
+  const { loading, user, profile } = useAuth()
 
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  // Load locations (areas and centers)
+  useEffect(() => {
+    const loadLocations = async () => {
+      try {
+        setLoadingLocations(true)
+        // Include Authorization header if a session token exists (not required for public mode)
+        const { data: { session } } = await supabase.auth.getSession()
+        const headers: HeadersInit = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+        const res = await fetch('/api/locations?public=true', { headers })
+        const data = await res.json()
+        if (!res.ok) {
+          console.error('Failed to load locations', data)
+          return
+        }
+        setAreas(data.areas || [])
+        setCenters(data.centers || [])
+      } catch (e) {
+        console.error('Error loading locations', e)
+      } finally {
+        setLoadingLocations(false)
+      }
+    }
+    loadLocations()
   }, [])
 
   // Handle redirects based on user type after successful registration
@@ -41,7 +72,6 @@ export default function RegisterPage() {
         email: user.email, 
         userType: profile.user_type 
       })
-      
       // Redirect based on user type
       if (profile.user_type === 'admin' || profile.user_type === 'super_admin') {
         console.log('Admin user detected, redirecting to admin dashboard')
@@ -53,6 +83,33 @@ export default function RegisterPage() {
     }
   }, [user, profile, loading, router])
 
+  // Handle successful registration from API
+  useEffect(() => {
+    const checkRegistrationSuccess = async () => {
+      // Check if user is authenticated after registration
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        console.log('User authenticated after registration:', session.user.email)
+        // The redirect will be handled by the first useEffect
+      }
+    }
+
+    // Check every 2 seconds for successful authentication
+    const interval = setInterval(checkRegistrationSuccess, 2000)
+    
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleCopy = async (text: string, field: 'serial' | 'email') => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField(null), 1500)
+    } catch (e) {
+      console.error('Copy failed', e)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
@@ -63,8 +120,9 @@ export default function RegisterPage() {
       return
     }
     
-    if (!formData.email.trim()) {
-      setFormError('Email is required')
+    // Only require email for adult registration
+    if (!isChild && !formData.email.trim()) {
+      setFormError('Email is required for adult registration')
       return
     }
     
@@ -114,7 +172,7 @@ export default function RegisterPage() {
       }
     }
 
-    // Prepare profile data for Supabase
+    // Prepare profile data for API
     const profileData = {
       full_name: formData.fullName.trim(),
       mobile: formData.mobile.trim(),
@@ -127,22 +185,52 @@ export default function RegisterPage() {
       center_id: formData.examCenter,
       user_type: 'user' as const
     }
-    
-    const { error } = await signUp(formData.email.trim(), formData.password, profileData)
-    
-    if (error) {
-      setFormError(error)
-    } else {
-      console.log('Registration successful, redirect will be handled automatically')
-      // The redirect will be handled by useEffect in the component
+
+    try {
+      setFormError(null)
+      
+      // Use the new API endpoint for registration
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: isChild ? '' : formData.email.trim(), // Empty email for children
+          password: formData.password,
+          profileData
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('Registration error:', result.error)
+        setFormError(result.error || 'Registration failed')
+        return
+      }
+
+      if (result.success) {
+        console.log('Registration successful:', result.message)
+        // Show success screen with serial and email + copy buttons
+        setSuccessData({ serialNumber: result.serialNumber, email: result.email })
+      } else {
+        setFormError(result.error || 'Registration failed')
+      }
+    } catch (error) {
+      console.error('Registration error:', error)
+      setFormError('Registration failed. Please try again.')
     }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+      // Reset center when area changes
+      ...(name === 'area' ? { examCenter: '' } : {})
+    }))
   }
 
   return (
@@ -159,38 +247,96 @@ export default function RegisterPage() {
           <p className="text-gray-600">Create your account to start your Quranic learning journey</p>
         </div>
 
-        {/* Registration Form */}
+        {/* Registration Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {!mounted ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
+          ) : successData ? (
+            // Success Screen
+            <div className="space-y-6 text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Registration Successful</h2>
+              <p className="text-gray-600">Please save your serial number and login email for future use.</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+                <div className="border rounded-lg p-4 text-left">
+                  <div className="text-sm text-gray-500 mb-1">Serial Number</div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-semibold text-gray-900 break-all">{successData.serialNumber}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(successData.serialNumber, 'serial')}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border text-sm hover:bg-gray-50"
+                    >
+                      {copiedField === 'serial' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                      <span>{copiedField === 'serial' ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="border rounded-lg p-4 text-left">
+                  <div className="text-sm text-gray-500 mb-1">Login Email</div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-semibold text-gray-900 break-all">{successData.email}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(successData.email, 'email')}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border text-sm hover:bg-gray-50"
+                    >
+                      {copiedField === 'email' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                      <span>{copiedField === 'email' ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => router.push('/login')}
+                  className="w-full sm:w-auto bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Go to Login
+                </button>
+              </div>
+            </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Registration Type */}
-              <div className="flex space-x-4 mb-6">
-                <button
-                  type="button"
-                  onClick={() => setIsChild(false)}
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
-                    !isChild
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Adult Registration
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsChild(true)}
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
-                    isChild
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Child Registration
-                </button>
+              <div className="mb-8">
+                <div className="bg-gray-100 p-1 rounded-xl w-full">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsChild(false)}
+                      className={`flex-1 py-3 px-4 sm:px-6 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out ${
+                        !isChild
+                          ? 'bg-white text-blue-600 shadow-sm transform scale-105'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <Users className={`h-4 w-4 ${!isChild ? 'text-blue-600' : 'text-gray-500'}`} />
+                        <span className="whitespace-nowrap">Adult Registration</span>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsChild(true)}
+                      className={`flex-1 py-3 px-4 sm:px-6 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out ${
+                        isChild
+                          ? 'bg-white text-blue-600 shadow-sm transform scale-105'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <Baby className={`h-4 w-4 ${isChild ? 'text-blue-600' : 'text-gray-500'}`} />
+                        <span className="whitespace-nowrap">Child Registration</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Error Message */}
@@ -201,9 +347,9 @@ export default function RegisterPage() {
               )}
 
               {/* Personal Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Full Name */}
-                <div className="md:col-span-2">
+                <div className="lg:col-span-2">
                   <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
                     Full Name *
                   </label>
@@ -224,27 +370,29 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Email */}
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400" />
+                {/* Email - Only show for adult registration */}
+                {!isChild && (
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Mail className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required={!isChild}
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your email address"
+                      />
                     </div>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter your email"
-                    />
                   </div>
-                </div>
+                )}
 
                 {/* Mobile */}
                 <div>
@@ -263,7 +411,7 @@ export default function RegisterPage() {
                       value={formData.mobile}
                       onChange={handleInputChange}
                       className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter mobile number"
+                      placeholder="Enter your mobile number"
                     />
                   </div>
                 </div>
@@ -271,7 +419,7 @@ export default function RegisterPage() {
                 {/* WhatsApp */}
                 <div>
                   <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 mb-2">
-                    WhatsApp Number
+                    WhatsApp Number (Optional)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -284,7 +432,7 @@ export default function RegisterPage() {
                       value={formData.whatsapp}
                       onChange={handleInputChange}
                       className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter WhatsApp number"
+                      placeholder="Enter your WhatsApp number"
                     />
                   </div>
                 </div>
@@ -294,29 +442,24 @@ export default function RegisterPage() {
                   <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
                     Gender *
                   </label>
-                  <div className="relative">
-                    <select
-                      id="gender"
-                      name="gender"
-                      required
-                      value={formData.gender}
-                      onChange={handleInputChange}
-                      className="block w-full pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                    >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <ChevronDown className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
+                  <select
+                    id="gender"
+                    name="gender"
+                    required
+                    value={formData.gender}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
                 </div>
               </div>
 
               {/* Child-specific fields */}
               {isChild && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-t pt-6">
                   <div>
                     <label htmlFor="fatherName" className="block text-sm font-medium text-gray-700 mb-2">
                       Father&apos;s Name *
@@ -348,7 +491,7 @@ export default function RegisterPage() {
                     />
                   </div>
 
-                  <div>
+                  <div className="lg:col-span-2">
                     <label htmlFor="iqamaNumber" className="block text-sm font-medium text-gray-700 mb-2">
                       Iqama Number *
                     </label>
@@ -367,54 +510,66 @@ export default function RegisterPage() {
               )}
 
               {/* Location Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-t pt-6">
                 <div>
                   <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-2">
                     Area *
                   </label>
-                  <div className="relative">
-                    <select
-                      id="area"
-                      name="area"
-                      required
-                      value={formData.area}
-                      onChange={handleInputChange}
-                      className="block w-full pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                    >
-                      <option value="">Select area</option>
-                      <option value="6873b655-a9fd-4c22-b6f0-bc2344e12b17">Riyadh City</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <ChevronDown className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
+                  <select
+                    id="area"
+                    name="area"
+                    required
+                    value={formData.area}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select area</option>
+                    {loadingLocations ? (
+                      <option value="">Loading areas...</option>
+                    ) : areas.length === 0 ? (
+                      <option value="">No areas available</option>
+                    ) : (
+                      areas.map(area => (
+                        <option key={area.id} value={area.id}>
+                          {area.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
 
                 <div>
                   <label htmlFor="examCenter" className="block text-sm font-medium text-gray-700 mb-2">
                     Exam Center *
                   </label>
-                  <div className="relative">
-                    <select
-                      id="examCenter"
-                      name="examCenter"
-                      required
-                      value={formData.examCenter}
-                      onChange={handleInputChange}
-                      className="block w-full pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                    >
-                      <option value="">Select exam center</option>
-                      <option value="90a8d810-aec8-480e-a0cf-345e20401f3c">QHLC Riyadh Center</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <ChevronDown className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </div>
+                  <select
+                    id="examCenter"
+                    name="examCenter"
+                    required
+                    value={formData.examCenter}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select exam center</option>
+                    {loadingLocations ? (
+                      <option value="">Loading centers...</option>
+                    ) : centers.length === 0 ? (
+                      <option value="">No centers available for this area</option>
+                    ) : (
+                      centers
+                        .filter(center => center.area_id === formData.area)
+                        .map(center => (
+                          <option key={center.id} value={center.id}>
+                            {center.name}
+                          </option>
+                        ))
+                    )}
+                  </select>
                 </div>
               </div>
 
               {/* Password Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-t pt-6">
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                     Password *
@@ -448,7 +603,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="confirmPassword" className="block text sm font-medium text-gray-700 mb-2">
                     Confirm Password *
                   </label>
                   <div className="relative">
