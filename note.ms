@@ -1,15 +1,6 @@
 
 
-
-Login page
-- Email account or Register number
-- Register number should be as key
-
-Registration page
-
-=========
-
-- other users settings
+- other users dashboard
 - Public pageg (resource, gallary, classess, contact us, About us)
 
 ======

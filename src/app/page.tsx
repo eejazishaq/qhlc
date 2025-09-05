@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { BookOpen, Users, Award, Smartphone, Globe, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { PublicHeader } from '@/components/public/PublicHeader'
+import { PublicFooter } from '@/components/public/PublicFooter'
 
 interface Banner {
   id: string
@@ -64,37 +66,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold text-blue-600">QHLC</h1>
-              </div>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/resources" className="text-gray-700 hover:text-blue-600 transition-colors">
-                Resources
-              </Link>
-              <Link href="/gallery" className="text-gray-700 hover:text-blue-600 transition-colors">
-                Gallery
-              </Link>
-              <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
-                Contact
-              </Link>
-              <Link href="/login" className="text-gray-700 hover:text-blue-600 transition-colors">
-                Login
-              </Link>
-            </nav>
-            <div className="md:hidden">
-              <Link href="/login" className="text-gray-700 hover:text-blue-600">
-                Login
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       {/* Banner Carousel */}
       {loading ? (
@@ -562,46 +534,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div>
-              <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">QHLC</h3>
-              <p className="text-gray-400 text-lg leading-relaxed">
-                Quranic Learning and Exam Management Portal for Saudi Arabia - Empowering education through technology.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-xl mb-6">Quick Links</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li><Link href="/resources" className="hover:text-white transition-colors text-lg">Resources</Link></li>
-                <li><Link href="/gallery" className="hover:text-white transition-colors text-lg">Gallery</Link></li>
-                <li><Link href="/downloads" className="hover:text-white transition-colors text-lg">Downloads</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-xl mb-6">Support</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li><Link href="/contact" className="hover:text-white transition-colors text-lg">Contact</Link></li>
-                <li><Link href="/help" className="hover:text-white transition-colors text-lg">Help Center</Link></li>
-                <li><Link href="/faq" className="hover:text-white transition-colors text-lg">FAQ</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-xl mb-6">Connect</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li className="text-lg">📧 support@qhlc.com</li>
-                <li className="text-lg">📱 +966-XX-XXX-XXXX</li>
-                <li className="text-lg">🌐 qhlc.com</li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p className="text-lg">&copy; 2025 QHLC. All rights reserved. Built with ❤️ for the Quranic Learning Community.</p>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   )
 } 
