@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Search, Filter, MapPin, Phone, ExternalLink, Loader2 } from 'lucide-react'
+import { Search, MapPin, Phone, ExternalLink, Loader2 } from 'lucide-react'
 
 interface ClassItem {
   id: string

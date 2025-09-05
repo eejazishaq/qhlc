@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Image from 'next/image'
 import { Search, Filter, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 
 interface GalleryItem {
@@ -57,7 +56,7 @@ export default function PublicGalleryPage() {
         return
       }
       setItems(Array.isArray(data?.data) ? data.data : [])
-    } catch (e) {
+    } catch {
       setError('Failed to load gallery')
       setItems([])
     } finally {

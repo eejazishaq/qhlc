@@ -73,7 +73,7 @@ export default function PublicResourcesPage() {
         total: data.pagination?.total ?? prev.total,
         totalPages: data.pagination?.totalPages ?? prev.totalPages
       }))
-    } catch (e) {
+    } catch {
       setError('Failed to load resources')
       setResources([])
       setPagination(prev => ({ ...prev, total: 0, totalPages: 0 }))

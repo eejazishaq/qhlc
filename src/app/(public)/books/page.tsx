@@ -69,7 +69,7 @@ export default function PublicBooksPage() {
         total: data.pagination?.total ?? prev.total,
         totalPages: data.pagination?.totalPages ?? prev.totalPages
       }))
-    } catch (e) {
+    } catch {
       setError('Failed to load books')
       setBooks([])
       setPagination(prev => ({ ...prev, total: 0, totalPages: 0 }))

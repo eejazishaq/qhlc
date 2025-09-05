@@ -1,7 +1,6 @@
 
 
 - other users dashboard
-- Public pageg (resource, gallary, classess, contact us, About us)
 
 ======
 
