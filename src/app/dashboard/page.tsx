@@ -16,7 +16,8 @@ export default function DashboardPage() {
           // Coordinators use the same dashboard as users
           router.push('/dashboard/user')
         } else if (profile?.user_type === 'convener') {
-          router.push('/dashboard/convener')
+          // Conveners use the same dashboard as users
+          router.push('/dashboard/user')
         } else if (['admin', 'super_admin'].includes(profile?.user_type || '')) {
           router.push('/admin')
         } else {

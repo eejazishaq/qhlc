@@ -120,26 +120,60 @@ export default function DashboardLayout({
             items: [
               {
                 name: 'Dashboard',
-                href: '/dashboard/convener',
+                href: '/dashboard/user',
                 icon: Home,
-                current: pathname === '/dashboard/convener'
+                current: pathname === '/dashboard/user'
+              },
+              {
+                name: 'Profile',
+                href: '/dashboard/user/profile',
+                icon: User,
+                current: pathname.startsWith('/dashboard/user/profile')
               }
             ]
           },
           {
-            group: 'Regional Management',
+            group: 'Learning',
             items: [
               {
-                name: 'Centers',
-                href: '/dashboard/convener/centers',
-                icon: Building2,
-                current: pathname.startsWith('/dashboard/convener/centers')
+                name: 'Exams',
+                href: '/dashboard/user/exams',
+                icon: FileText,
+                current: pathname.startsWith('/dashboard/user/exams')
               },
               {
-                name: 'Reports',
-                href: '/dashboard/convener/reports',
-                icon: FileText,
-                current: pathname.startsWith('/dashboard/convener/reports')
+                name: 'History',
+                href: '/dashboard/user/history',
+                icon: BarChart3,
+                current: pathname.startsWith('/dashboard/user/history')
+              }
+            ]
+          },
+          {
+            group: 'Area Management',
+            items: [
+              {
+                name: 'My Students',
+                href: '/dashboard/user/students',
+                icon: Users,
+                current: pathname.startsWith('/dashboard/user/students')
+              },
+              {
+                name: 'Centers',
+                href: '/dashboard/user/centers',
+                icon: Building2,
+                current: pathname.startsWith('/dashboard/user/centers')
+              }
+            ]
+          },
+          {
+            group: 'Achievements',
+            items: [
+              {
+                name: 'Certificates',
+                href: '/dashboard/user/certificates',
+                icon: Award,
+                current: pathname.startsWith('/dashboard/user/certificates')
               }
             ]
           }

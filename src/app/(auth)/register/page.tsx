@@ -77,8 +77,8 @@ export default function RegisterPage() {
         console.log('Admin user detected, redirecting to admin dashboard')
         router.push('/admin')
       } else if (profile.user_type === 'convener') {
-        console.log('Convener user detected, redirecting to convener dashboard')
-        router.push('/dashboard/convener')
+        console.log('Convener user detected, redirecting to user dashboard')
+        router.push('/dashboard/user')
       } else {
         // Regular users and coordinators use the same dashboard
         console.log('User/Coordinator detected, redirecting to user dashboard')
