@@ -50,50 +50,98 @@ export default function DashboardLayout({
       case 'coordinator':
         return [
           {
-            name: 'Dashboard',
-            href: '/dashboard/coordinator',
-            icon: Home,
-            current: pathname === '/dashboard/coordinator'
+            group: 'Overview',
+            items: [
+              {
+                name: 'Dashboard',
+                href: '/dashboard/user',
+                icon: Home,
+                current: pathname === '/dashboard/user'
+              },
+              {
+                name: 'Profile',
+                href: '/dashboard/user/profile',
+                icon: User,
+                current: pathname.startsWith('/dashboard/user/profile')
+              }
+            ]
           },
           {
-            name: 'Attendance',
-            href: '/dashboard/coordinator/attendance',
-            icon: ClipboardList,
-            current: pathname.startsWith('/dashboard/coordinator/attendance')
+            group: 'Learning',
+            items: [
+              {
+                name: 'Exams',
+                href: '/dashboard/user/exams',
+                icon: FileText,
+                current: pathname.startsWith('/dashboard/user/exams')
+              },
+              {
+                name: 'History',
+                href: '/dashboard/user/history',
+                icon: BarChart3,
+                current: pathname.startsWith('/dashboard/user/history')
+              }
+            ]
           },
           {
-            name: 'Progress',
-            href: '/dashboard/coordinator/progress',
-            icon: BarChart3,
-            current: pathname.startsWith('/dashboard/coordinator/progress')
+            group: 'Center Management',
+            items: [
+              {
+                name: 'My Students',
+                href: '/dashboard/user/students',
+                icon: Users,
+                current: pathname.startsWith('/dashboard/user/students')
+              },
+              // {
+              //   name: 'Attendance',
+              //   href: '/dashboard/user/attendance',
+              //   icon: ClipboardList,
+              //   current: pathname.startsWith('/dashboard/user/attendance')
+              // }
+            ]
           },
           {
-            name: 'Books',
-            href: '/dashboard/coordinator/books',
-            icon: BookOpen,
-            current: pathname.startsWith('/dashboard/coordinator/books')
+            group: 'Achievements',
+            items: [
+              {
+                name: 'Certificates',
+                href: '/dashboard/user/certificates',
+                icon: Award,
+                current: pathname.startsWith('/dashboard/user/certificates')
+              }
+            ]
           }
         ]
       
       case 'convener':
         return [
           {
-            name: 'Dashboard',
-            href: '/dashboard/convener',
-            icon: Home,
-            current: pathname === '/dashboard/convener'
+            group: 'Overview',
+            items: [
+              {
+                name: 'Dashboard',
+                href: '/dashboard/convener',
+                icon: Home,
+                current: pathname === '/dashboard/convener'
+              }
+            ]
           },
           {
-            name: 'Centers',
-            href: '/dashboard/convener/centers',
-            icon: Building2,
-            current: pathname.startsWith('/dashboard/convener/centers')
-          },
-          {
-            name: 'Reports',
-            href: '/dashboard/convener/reports',
-            icon: FileText,
-            current: pathname.startsWith('/dashboard/convener/reports')
+            group: 'Regional Management',
+            items: [
+              {
+                name: 'Centers',
+                href: '/dashboard/convener/centers',
+                icon: Building2,
+                current: pathname.startsWith('/dashboard/convener/centers')
+              },
+              {
+                name: 'Reports',
+                href: '/dashboard/convener/reports',
+                icon: FileText,
+                current: pathname.startsWith('/dashboard/convener/reports')
+              }
+            ]
           }
         ]
       
@@ -101,92 +149,127 @@ export default function DashboardLayout({
       case 'super_admin':
         return [
           {
-            name: 'Dashboard',
-            href: '/admin',
-            icon: Home,
-            current: pathname === '/admin'
+            group: 'Overview',
+            items: [
+              {
+                name: 'Dashboard',
+                href: '/admin',
+                icon: Home,
+                current: pathname === '/admin'
+              }
+            ]
           },
           {
-            name: 'Users',
-            href: '/admin/users',
-            icon: Users,
-            current: pathname.startsWith('/admin/users')
+            group: 'User Management',
+            items: [
+              {
+                name: 'Users',
+                href: '/admin/users',
+                icon: Users,
+                current: pathname.startsWith('/admin/users')
+              }
+            ]
           },
           {
-            name: 'Exams',
-            href: '/admin/exams',
-            icon: BookOpen,
-            current: pathname.startsWith('/admin/exams')
+            group: 'Exam Management',
+            items: [
+              {
+                name: 'Exams',
+                href: '/admin/exams',
+                icon: BookOpen,
+                current: pathname.startsWith('/admin/exams')
+              },
+              {
+                name: 'Questions',
+                href: '/admin/questions',
+                icon: FileText,
+                current: pathname.startsWith('/admin/questions')
+              },
+              {
+                name: 'Evaluation',
+                href: '/admin/evaluation',
+                icon: Award,
+                current: pathname.startsWith('/admin/evaluation')
+              }
+            ]
           },
           {
-            name: 'Questions',
-            href: '/admin/questions',
-            icon: FileText,
-            current: pathname.startsWith('/admin/questions')
-          },
-          {
-            name: 'Evaluation',
-            href: '/admin/evaluation',
-            icon: Award,
-            current: pathname.startsWith('/admin/evaluation')
-          },
-          {
-            name: 'Resources',
-            href: '/admin/resources',
-            icon: Upload,
-            current: pathname.startsWith('/admin/resources')
-          },
-          {
-            name: 'Reports',
-            href: '/admin/reports',
-            icon: BarChart3,
-            current: pathname.startsWith('/admin/reports')
+            group: 'Content & Reports',
+            items: [
+              {
+                name: 'Resources',
+                href: '/admin/resources',
+                icon: Upload,
+                current: pathname.startsWith('/admin/resources')
+              },
+              {
+                name: 'Reports',
+                href: '/admin/reports',
+                icon: BarChart3,
+                current: pathname.startsWith('/admin/reports')
+              }
+            ]
           }
         ]
       
       default: // user
         return [
           {
-            name: 'Dashboard',
-            href: '/dashboard/user',
-            icon: Home,
-            current: pathname === '/dashboard/user'
+            group: 'Overview',
+            items: [
+              {
+                name: 'Dashboard',
+                href: '/dashboard/user',
+                icon: Home,
+                current: pathname === '/dashboard/user'
+              },
+              {
+                name: 'Profile',
+                href: '/dashboard/user/profile',
+                icon: User,
+                current: pathname.startsWith('/dashboard/user/profile')
+              }
+            ]
           },
           {
-            name: 'Profile',
-            href: '/dashboard/user/profile',
-            icon: User,
-            current: pathname.startsWith('/dashboard/user/profile')
+            group: 'Learning',
+            items: [
+              {
+                name: 'Exams',
+                href: '/dashboard/user/exams',
+                icon: FileText,
+                current: pathname.startsWith('/dashboard/user/exams')
+              },
+              // {
+              //   name: 'Mock Exams',
+              //   href: '/dashboard/user/mock-exams',
+              //   icon: BookMarked,
+              //   current: pathname.startsWith('/dashboard/user/mock-exams')
+              // },
+              {
+                name: 'History',
+                href: '/dashboard/user/history',
+                icon: BarChart3,
+                current: pathname.startsWith('/dashboard/user/history')
+              }
+            ]
           },
           {
-            name: 'Exams',
-            href: '/dashboard/user/exams',
-            icon: FileText,
-            current: pathname.startsWith('/dashboard/user/exams')
-          },
-          // {
-          //   name: 'Mock Exams',
-          //   href: '/dashboard/user/mock-exams',
-          //   icon: BookMarked,
-          //   current: pathname.startsWith('/dashboard/user/mock-exams')
-          // },
-          {
-            name: 'History',
-            href: '/dashboard/user/history',
-            icon: BarChart3,
-            current: pathname.startsWith('/dashboard/user/history')
-          },
-          {
-            name: 'Certificates',
-            href: '/dashboard/user/certificates',
-            icon: Award,
-            current: pathname.startsWith('/dashboard/user/certificates')
+            group: 'Achievements',
+            items: [
+              {
+                name: 'Certificates',
+                href: '/dashboard/user/certificates',
+                icon: Award,
+                current: pathname.startsWith('/dashboard/user/certificates')
+              }
+            ]
           }
         ]
     }
   }
 
-  const navigation = getNavigation()
+  const navigationGroups = getNavigation()
 
   const handleLogout = async () => {
     try {
@@ -255,26 +338,45 @@ export default function DashboardLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 mt-6 px-3">
-            <div className="space-y-1">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    item.current
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon
-                    className={`mr-3 h-5 w-5 ${
-                      item.current ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
-                    }`}
-                  />
-                  {item.name}
-                </Link>
+          <nav className="flex-1 mt-6 px-3 overflow-y-auto">
+            <div className="space-y-6">
+              {navigationGroups.map((group, groupIndex) => (
+                <div key={group.group}>
+                  {/* Group Header */}
+                  <div className="px-3 mb-2">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      {group.group}
+                    </h3>
+                  </div>
+                  
+                  {/* Group Items */}
+                  <div className="space-y-1">
+                    {group.items.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                          item.current
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <item.icon
+                          className={`mr-3 h-5 w-5 flex-shrink-0 ${
+                            item.current ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                          }`}
+                        />
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                  
+                  {/* Separator (not for last group) */}
+                  {groupIndex < navigationGroups.length - 1 && (
+                    <div className="mt-4 border-t border-gray-200"></div>
+                  )}
+                </div>
               ))}
             </div>
           </nav>

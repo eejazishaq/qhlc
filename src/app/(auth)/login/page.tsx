@@ -30,8 +30,12 @@ export default function LoginPage() {
       if (profile.user_type === 'admin' || profile.user_type === 'super_admin') {
         console.log('Admin user detected, redirecting to admin dashboard')
         router.push('/admin')
+      } else if (profile.user_type === 'convener') {
+        console.log('Convener user detected, redirecting to convener dashboard')
+        router.push('/dashboard/convener')
       } else {
-        console.log('Regular user detected, redirecting to user dashboard')
+        // Regular users and coordinators use the same dashboard
+        console.log('User/Coordinator detected, redirecting to user dashboard')
         router.push('/dashboard/user')
       }
     }
@@ -139,7 +143,7 @@ export default function LoginPage() {
                   >
                     <div className="flex items-center justify-center space-x-2">
                       <Hash className={`h-4 w-4 ${loginMethod === 'serial' ? 'text-blue-600' : 'text-gray-500'}`} />
-                      <span className="whitespace-nowrap">Serial Number</span>
+                      <span className="whitespace-nowrap">Registration Number</span>
                     </div>
                   </button>
                 </div>
@@ -157,10 +161,10 @@ export default function LoginPage() {
                   </div>
                   <div>
                     <p className="text-sm text-blue-800 font-medium">
-                      Serial Number Login
+                      Registration Number Login
                     </p>
                     <p className="text-xs text-blue-700 mt-1">
-                      Enter your serial number and password to sign in.
+                      Enter your registration number and password to sign in.
                     </p>
                   </div>
                 </div>
@@ -171,7 +175,7 @@ export default function LoginPage() {
               {/* Email or Serial Number Field */}
               <div>
                 <label htmlFor={loginMethod === 'email' ? 'email' : 'serialNumber'} className="block text-sm font-medium text-gray-700 mb-2">
-                  {loginMethod === 'email' ? 'Email Address' : 'Serial Number'}
+                  {loginMethod === 'email' ? 'Email Address' : 'Registration Number'}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -189,7 +193,7 @@ export default function LoginPage() {
                     value={loginMethod === 'email' ? formData.email : formData.serialNumber}
                     onChange={handleInputChange}
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter your serial number'}
+                    placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter your registration number'}
                   />
                 </div>
               </div>

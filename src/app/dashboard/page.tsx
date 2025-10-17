@@ -13,7 +13,8 @@ export default function DashboardPage() {
       if (user) {
         // Redirect based on user role
         if (profile?.user_type === 'coordinator') {
-          router.push('/dashboard/coordinator')
+          // Coordinators use the same dashboard as users
+          router.push('/dashboard/user')
         } else if (profile?.user_type === 'convener') {
           router.push('/dashboard/convener')
         } else if (['admin', 'super_admin'].includes(profile?.user_type || '')) {

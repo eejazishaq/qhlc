@@ -247,7 +247,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
               <div className="flex items-center space-x-3">
                 <Hash className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Serial Number</p>
+                  <p className="text-sm font-medium text-gray-900">Registration Number</p>
                   <p className="text-sm font-mono text-gray-600">{user.serial_number}</p>
                 </div>
               </div>

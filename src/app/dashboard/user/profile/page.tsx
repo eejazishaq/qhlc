@@ -313,7 +313,7 @@ export default function UserProfilePage() {
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Serial Number</p>
+                  <p className="text-sm font-medium text-gray-900">Registration Number</p>
                   <p className="text-sm text-gray-500">{profile?.serial_number || 'QHLC-00000'}</p>
                 </div>
               </div>
