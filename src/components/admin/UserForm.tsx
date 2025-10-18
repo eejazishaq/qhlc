@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Input, Button, Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui'
+import LocationSelector from './LocationSelector'
 import { User, Phone, Mail, MapPin, Calendar, IdCard, UserCheck } from 'lucide-react'
 
 interface UserFormData {
@@ -233,67 +234,40 @@ const UserForm: React.FC<UserFormProps> = ({
             </div>
           </div>
 
-          {/* Role and Location */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                User Role *
-              </label>
-              <select
-                value={formData.user_type}
-                onChange={(e) => handleInputChange('user_type', e.target.value)}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="user">User</option>
-                <option value="coordinator">Coordinator</option>
-                <option value="convener">Convener</option>
-                <option value="admin">Admin</option>
-                <option value="super_admin">Super Admin</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Area *
-              </label>
-              <select
-                value={formData.area_id}
-                onChange={(e) => handleInputChange('area_id', e.target.value)}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select Area</option>
-                {areas.map(area => (
-                  <option key={area.id} value={area.id}>
-                    {area.name}
-                  </option>
-                ))}
-              </select>
-              {errors.area_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.area_id}</p>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Exam Center *
-              </label>
-              <select
-                value={formData.center_id}
-                onChange={(e) => handleInputChange('center_id', e.target.value)}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={!formData.area_id}
-              >
-                <option value="">Select Center</option>
-                {filteredCenters.map(center => (
-                  <option key={center.id} value={center.id}>
-                    {center.name}
-                  </option>
-                ))}
-              </select>
-              {errors.center_id && (
-                <p className="text-sm text-red-600 mt-1">{errors.center_id}</p>
-              )}
-            </div>
+          {/* Role */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              User Role *
+            </label>
+            <select
+              value={formData.user_type}
+              onChange={(e) => handleInputChange('user_type', e.target.value)}
+              className="block w-full rounded-lg border border-gray-300 px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="user">User</option>
+              <option value="coordinator">Coordinator</option>
+              <option value="convener">Convener</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+
+          {/* Location Selection */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Location Assignment</h3>
+            <LocationSelector
+              selectedArea={formData.area_id}
+              selectedCenter={formData.center_id}
+              onAreaChange={(areaId) => handleInputChange('area_id', areaId)}
+              onCenterChange={(centerId) => handleInputChange('center_id', centerId)}
+              showCenter={true}
+            />
+            {errors.area_id && (
+              <p className="text-sm text-red-600 mt-1">{errors.area_id}</p>
+            )}
+            {errors.center_id && (
+              <p className="text-sm text-red-600 mt-1">{errors.center_id}</p>
+            )}
           </div>
 
           {/* Child-specific fields (only for user role) */}

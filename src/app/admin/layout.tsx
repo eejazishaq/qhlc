@@ -22,7 +22,10 @@ import {
   BookOpen,
   Home,
   Award,
-  GraduationCap
+  GraduationCap,
+  Globe,
+  MapPin,
+  Building2
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -67,6 +70,16 @@ export default function AdminLayout({
       items: [
         { name: 'Users', href: '/admin/users', icon: Users },
         { name: 'Transfer Tool', href: '/admin/transfer', icon: ArrowRight }
+      ]
+    },
+    {
+      group: 'Location Management',
+      items: [
+        { name: 'Overview', href: '/admin/locations', icon: Globe },
+        { name: 'Countries', href: '/admin/locations/countries', icon: Globe },
+        { name: 'Regions', href: '/admin/locations/regions', icon: MapPin },
+        { name: 'Areas', href: '/admin/locations/areas', icon: Building2 },
+        { name: 'Exam Centers', href: '/admin/locations/centers', icon: Users }
       ]
     },
     {
