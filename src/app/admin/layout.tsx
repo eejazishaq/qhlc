@@ -79,7 +79,8 @@ export default function AdminLayout({
         { name: 'Countries', href: '/admin/locations/countries', icon: Globe },
         { name: 'Regions', href: '/admin/locations/regions', icon: MapPin },
         { name: 'Areas', href: '/admin/locations/areas', icon: Building2 },
-        { name: 'Exam Centers', href: '/admin/locations/centers', icon: Users }
+        { name: 'Exam Centers', href: '/admin/locations/centers', icon: Users },
+        { name: 'Analytics', href: '/admin/locations/analytics', icon: BarChart3 }
       ]
     },
     {

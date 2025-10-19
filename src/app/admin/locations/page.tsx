@@ -253,7 +253,7 @@ export default function LocationsDashboard() {
             <h3 className="text-base sm:text-lg font-medium text-gray-900">Quick Access</h3>
           </div>
           <div className="p-4 sm:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button
                 onClick={() => router.push('/admin/locations/hierarchy')}
                 className="flex items-center p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -262,6 +262,16 @@ export default function LocationsDashboard() {
                 <div className="text-left min-w-0 flex-1">
                   <p className="font-medium text-gray-900 text-sm sm:text-base">View Hierarchy</p>
                   <p className="text-xs sm:text-sm text-gray-600">See complete location structure</p>
+                </div>
+              </button>
+              <button
+                onClick={() => router.push('/admin/locations/analytics')}
+                className="flex items-center p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-3 flex-shrink-0" />
+                <div className="text-left min-w-0 flex-1">
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">View Analytics</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Location insights and reports</p>
                 </div>
               </button>
               <button
