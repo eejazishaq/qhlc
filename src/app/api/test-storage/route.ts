@@ -194,6 +194,34 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    if (action === 'fix-bucket-access') {
+      // Fix bucket public access configuration
+      const buckets = ['profiles']
+      const results = []
+
+      for (const bucketId of buckets) {
+        try {
+          // Try to update bucket to ensure it's public
+          const { data, error } = await supabase.storage.updateBucket(bucketId, {
+            public: true
+          })
+
+          if (error) {
+            results.push({ bucket: bucketId, success: false, error: error.message })
+          } else {
+            results.push({ bucket: bucketId, success: true, data })
+          }
+        } catch (error) {
+          results.push({ bucket: bucketId, success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+      }
+
+      return NextResponse.json({
+        message: 'Bucket access fix completed',
+        results
+      })
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
     console.error('Storage setup error:', error)

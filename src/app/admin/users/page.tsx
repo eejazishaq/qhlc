@@ -167,18 +167,20 @@ export default function AdminUsersPage() {
 
   const fetchLocations = async () => {
     try {
-      // Get the current session token
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) {
-        throw new Error('No authentication token available')
-      }
+      // Fetch all areas and centers for admin dropdowns
+      const [areasResponse, centersResponse] = await Promise.all([
+        authenticatedFetch('/api/admin/locations/areas?limit=1000'),
+        authenticatedFetch('/api/admin/locations/centers?limit=1000')
+      ])
 
-      const response = await authenticatedFetch('/api/locations')
-      if (!response.ok) throw new Error('Failed to fetch locations')
-      
-      const data = await response.json()
-      setAreas(data.areas || [])
-      setCenters(data.centers || [])
+      if (areasResponse.ok && centersResponse.ok) {
+        const areasData = await areasResponse.json()
+        const centersData = await centersResponse.json()
+        setAreas(areasData.areas || [])
+        setCenters(centersData.centers || [])
+      } else {
+        console.error('Failed to fetch locations')
+      }
     } catch (error) {
       console.error('Error fetching locations:', error)
     }

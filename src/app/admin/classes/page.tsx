@@ -321,6 +321,17 @@ export default function AdminClassesPage() {
     return centers.filter(center => center.area_id === selectedAreaFilter)
   }
 
+  // Helper functions to get area and center names
+  const getAreaName = (areaId: string) => {
+    const area = areas.find(a => a.id === areaId)
+    return area?.name || 'Unknown Area'
+  }
+
+  const getCenterName = (centerId: string) => {
+    const center = centers.find(c => c.id === centerId)
+    return center?.name || 'Unknown Center'
+  }
+
   if (loading || !mounted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -581,11 +592,11 @@ export default function AdminClassesPage() {
                       <div className="text-sm text-gray-900">
                         <div className="flex items-center space-x-1">
                           <MapPin className="w-4 h-4 text-gray-400" />
-                          <span>{classItem.area?.name || 'Unknown Area'}</span>
+                          <span>{classItem.area?.name || getAreaName(classItem.area_id)}</span>
                         </div>
                         <div className="flex items-center space-x-1 mt-1">
                           <MapPinIcon className="w-4 h-4 text-gray-400" />
-                          <span>{classItem.center?.name || 'Unknown Center'}</span>
+                          <span>{classItem.center?.name || getCenterName(classItem.center_id)}</span>
                         </div>
                         <div className="text-xs text-gray-500 mt-1">{classItem.address}</div>
                         {classItem.google_map_link && (

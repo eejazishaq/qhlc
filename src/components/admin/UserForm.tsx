@@ -261,6 +261,7 @@ const UserForm: React.FC<UserFormProps> = ({
               onAreaChange={(areaId) => handleInputChange('area_id', areaId)}
               onCenterChange={(centerId) => handleInputChange('center_id', centerId)}
               showCenter={true}
+              directMode={true}
             />
             {errors.area_id && (
               <p className="text-sm text-red-600 mt-1">{errors.area_id}</p>

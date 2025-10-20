@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { Upload, X, File, Image, FileText, Video, Music } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import { authenticatedFetch } from '@/lib/utils/api'
 
 interface FileUploadProps {
   bucket: 'profiles' | 'gallery' | 'resources' | 'certificates'
@@ -104,15 +105,28 @@ export default function FileUpload({
         if (error) {
           console.error('Upload error:', error)
           
-          // If bucket doesn't exist, try to create it
-          if (error.message.includes('bucket') || error.message.includes('not found')) {
+          // If bucket doesn't exist, try to create it via API
+          if (error.message.includes('bucket') || error.message.includes('not found') || error.message.includes('404')) {
             try {
-              console.log('Attempting to create bucket:', bucket)
-              await supabase.storage.createBucket(bucket, {
-                public: true,
-                fileSizeLimit: 20971520, // 20MB
-                allowedMimeTypes: ['*/*']
+              console.log('Attempting to create bucket via API:', bucket)
+              
+              // Try to create bucket via API endpoint
+              const createResponse = await authenticatedFetch('/api/test-storage', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'create-buckets' })
               })
+              
+              if (!createResponse.ok) {
+                console.error('Failed to create bucket via API')
+                onError?.(`Storage bucket '${bucket}' does not exist. Please contact administrator to set up storage buckets.`)
+                continue
+              }
+              
+              const createResult = await createResponse.json()
+              console.log('Bucket creation result:', createResult)
+              
+              // Wait a moment for bucket to be available
+              await new Promise(resolve => setTimeout(resolve, 1000))
               
               // Retry upload
               const { data: retryData, error: retryError } = await supabase.storage
@@ -123,30 +137,64 @@ export default function FileUpload({
                 })
                 
               if (retryError) {
-                onError?.(`Failed to upload ${file.name}: ${retryError.message}`)
+                onError?.(`Failed to upload ${file.name} after bucket creation: ${retryError.message}`)
                 continue
               }
+              
+              // If retry succeeded, get the public URL and add to uploadedFiles
+              const { data: urlData } = supabase.storage
+                .from(bucket)
+                .getPublicUrl(filename)
+
+              console.log('File uploaded successfully after bucket creation:', urlData.publicUrl)
+
+              // Clean and validate the URL
+              let cleanUrl = urlData.publicUrl
+              if (cleanUrl.startsWith('@')) {
+                cleanUrl = cleanUrl.substring(1)
+                console.warn('Removed @ prefix from retry URL:', cleanUrl)
+              }
+
+              uploadedFiles.push({
+                url: cleanUrl,
+                filename: file.name
+              })
+              continue
             } catch (createError) {
-              onError?.(`Failed to create bucket and upload ${file.name}: ${error.message}`)
+              console.error('Error creating bucket:', createError)
+              onError?.(`Storage bucket '${bucket}' does not exist and could not be created. Please contact administrator.`)
               continue
             }
           } else {
             onError?.(`Failed to upload ${file.name}: ${error.message}`)
             continue
           }
+        } else {
+          // Get public URL for successful upload
+          const { data: urlData } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(filename)
+
+          console.log('File uploaded successfully:', urlData.publicUrl)
+          console.log('Generated filename:', filename)
+
+          // Clean and validate the URL
+          let cleanUrl = urlData.publicUrl
+          if (cleanUrl.startsWith('@')) {
+            cleanUrl = cleanUrl.substring(1)
+            console.warn('Removed @ prefix from URL:', cleanUrl)
+          }
+          
+          // Additional URL validation
+          console.log('Original URL from Supabase:', urlData.publicUrl)
+          console.log('Cleaned URL:', cleanUrl)
+          console.log('URL validation - isValid:', cleanUrl.startsWith('http'))
+
+          uploadedFiles.push({
+            url: cleanUrl,
+            filename: file.name
+          })
         }
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from(bucket)
-          .getPublicUrl(filename)
-
-        console.log('File uploaded successfully:', urlData.publicUrl)
-
-        uploadedFiles.push({
-          url: urlData.publicUrl,
-          filename: file.name
-        })
       }
 
       // Call onUpload for each successful upload

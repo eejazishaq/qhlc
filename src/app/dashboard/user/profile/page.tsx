@@ -115,6 +115,7 @@ export default function UserProfilePage() {
       area_id: profile?.area_id || '',
       center_id: profile?.center_id || '',
     })
+    setProfileImageUrl(profile?.profile_image || '')
     setIsEditing(false)
   }
 
@@ -165,7 +166,26 @@ export default function UserProfilePage() {
             <CardContent>
               <ProfileImageUpload
                 currentImageUrl={profileImageUrl}
-                onImageUpdate={setProfileImageUrl}
+                onImageUpdate={async (url) => {
+                  // Clean the URL if needed
+                  let cleanUrl = url
+                  if (cleanUrl && cleanUrl.startsWith('@')) {
+                    cleanUrl = cleanUrl.substring(1)
+                    console.warn('Removed @ prefix from profile page URL:', cleanUrl)
+                  }
+                  
+                  console.log('Profile page received URL:', cleanUrl)
+                  
+                  setProfileImageUrl(cleanUrl)
+                  // Update the profile data immediately for better UX
+                  try {
+                    await updateProfile({ profile_image: cleanUrl || null })
+                  } catch (error) {
+                    console.error('Error updating profile image:', error)
+                    // Revert the state if update failed
+                    setProfileImageUrl(profile?.profile_image || '')
+                  }
+                }}
                 onError={(error) => console.error('Profile image error:', error)}
                 disabled={!isEditing}
               />

@@ -49,10 +49,14 @@ export async function GET(request: NextRequest) {
     const subject = searchParams.get('subject') || ''
     const teacher = searchParams.get('teacher') || ''
 
-    // Build query
+    // Build query with joined area and center data
     let query = supabase
       .from('qhlc_classes')
-      .select('*')
+      .select(`
+        *,
+        areas(id, name),
+        exam_centers(id, name)
+      `)
 
     // Apply filters
     if (search) {
