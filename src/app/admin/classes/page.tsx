@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
+import { authenticatedFetch } from '@/lib/utils/api'
 import { Plus, Search, X, Edit, Trash2, MapPin, Phone, Mail, FileText, Calendar, Users, MapPin as MapPinIcon, ExternalLink, AlertCircle } from 'lucide-react'
 
 interface Class {
@@ -128,12 +129,6 @@ export default function AdminClassesPage() {
     try {
       setLoadingData(true)
       
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        throw new Error('No authentication token available')
-      }
-      
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: '50'
@@ -144,11 +139,7 @@ export default function AdminClassesPage() {
       if (selectedCenterFilter) params.append('centerId', selectedCenterFilter)
       if (selectedStatusFilter) params.append('status', selectedStatusFilter)
       
-      const response = await fetch(`/api/admin/classes?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      })
+      const response = await authenticatedFetch(`/api/admin/classes?${params}`)
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -170,22 +161,17 @@ export default function AdminClassesPage() {
 
   const fetchLocations = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        throw new Error('No authentication token available')
-      }
+      // Fetch all areas and centers for admin dropdowns
+      const [areasResponse, centersResponse] = await Promise.all([
+        authenticatedFetch('/api/admin/locations/areas?limit=1000'),
+        authenticatedFetch('/api/admin/locations/centers?limit=1000')
+      ])
 
-      const response = await fetch('/api/locations', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setAreas(data.areas || [])
-        setCenters(data.centers || [])
+      if (areasResponse.ok && centersResponse.ok) {
+        const areasData = await areasResponse.json()
+        const centersData = await centersResponse.json()
+        setAreas(areasData.areas || [])
+        setCenters(centersData.centers || [])
       } else {
         console.error('Failed to fetch locations')
       }
@@ -198,18 +184,8 @@ export default function AdminClassesPage() {
     try {
       setFormLoading(true)
       
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        throw new Error('No authentication token available')
-      }
-      
-      const response = await fetch('/api/admin/classes', {
+      const response = await authenticatedFetch('/api/admin/classes', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
         body: JSON.stringify(formData)
       })
 
@@ -240,18 +216,8 @@ export default function AdminClassesPage() {
     try {
       setFormLoading(true)
       
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        throw new Error('No authentication token available')
-      }
-      
-      const response = await fetch('/api/admin/classes', {
+      const response = await authenticatedFetch('/api/admin/classes', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
         body: JSON.stringify({
           id: selectedClass.id,
           ...formData
@@ -286,17 +252,8 @@ export default function AdminClassesPage() {
     try {
       setDeleteLoading(true)
       
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        throw new Error('No authentication token available')
-      }
-      
-      const response = await fetch(`/api/admin/classes?id=${selectedClass.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
+      const response = await authenticatedFetch(`/api/admin/classes?id=${selectedClass.id}`, {
+        method: 'DELETE'
       })
 
       if (!response.ok) {
@@ -844,7 +801,7 @@ function ClassForm({
           <label className="block text-sm font-medium text-gray-700 mb-1">Area *</label>
           <select
             value={formData.area_id}
-            onChange={(e) => setFormData({ ...formData, area_id: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, area_id: e.target.value, center_id: '' })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             required
           >
