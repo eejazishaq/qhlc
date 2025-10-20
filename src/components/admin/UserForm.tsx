@@ -253,16 +253,18 @@ const UserForm: React.FC<UserFormProps> = ({
           </div>
 
           {/* Location Selection */}
-          <div>
+          <div className="relative">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Location Assignment</h3>
-            <LocationSelector
-              selectedArea={formData.area_id}
-              selectedCenter={formData.center_id}
-              onAreaChange={(areaId) => handleInputChange('area_id', areaId)}
-              onCenterChange={(centerId) => handleInputChange('center_id', centerId)}
-              showCenter={true}
-              directMode={true}
-            />
+            <div className="relative z-10">
+              <LocationSelector
+                selectedArea={formData.area_id}
+                selectedCenter={formData.center_id}
+                onAreaChange={(areaId) => handleInputChange('area_id', areaId)}
+                onCenterChange={(centerId) => handleInputChange('center_id', centerId)}
+                showCenter={true}
+                directMode={true}
+              />
+            </div>
             {errors.area_id && (
               <p className="text-sm text-red-600 mt-1">{errors.area_id}</p>
             )}

@@ -238,7 +238,7 @@ export default function LocationSelector({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" style={{ position: 'relative' }}>
       {/* Country Selector - only show in hierarchical mode */}
       {!directMode && (
         <div>
@@ -296,7 +296,7 @@ export default function LocationSelector({
 
       {/* Area Selector */}
       {((!directMode && selectedRegion) || directMode) && (
-        <div>
+        <div className="relative" style={{ isolation: 'isolate' }}>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             <Building2 className="w-4 h-4 inline mr-1" />
             Area *
@@ -308,7 +308,14 @@ export default function LocationSelector({
               onCenterChange?.('')
             }}
             disabled={disabled || loading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-white relative z-10"
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              appearance: 'none'
+            }}
           >
             <option value="">Select an area</option>
             {areas.map(area => (
@@ -317,12 +324,18 @@ export default function LocationSelector({
               </option>
             ))}
           </select>
+          {/* Custom dropdown arrow */}
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none z-20" style={{ top: '1.75rem' }}>
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
       )}
 
       {/* Exam Center Selector */}
       {selectedArea && showCenter && (
-        <div>
+        <div className="relative" style={{ isolation: 'isolate' }}>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             <Users className="w-4 h-4 inline mr-1" />
             Exam Center *
@@ -331,7 +344,14 @@ export default function LocationSelector({
             value={selectedCenter || ''}
             onChange={(e) => onCenterChange?.(e.target.value)}
             disabled={disabled || loading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-white relative z-10"
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              appearance: 'none'
+            }}
           >
             <option value="">Select an exam center</option>
             {centers
@@ -347,6 +367,12 @@ export default function LocationSelector({
                 </option>
               ))}
           </select>
+          {/* Custom dropdown arrow */}
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none z-20" style={{ top: '1.75rem' }}>
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
       )}
     </div>

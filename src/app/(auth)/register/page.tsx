@@ -238,8 +238,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4" style={{ position: 'relative' }}>
+      <div className="max-w-2xl mx-auto" style={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -252,7 +252,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Registration Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 relative" style={{ position: 'relative', overflow: 'visible' }}>
           {!mounted ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -306,7 +306,7 @@ export default function RegisterPage() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" style={{ position: 'relative', overflow: 'visible' }}>
               {/* Registration Type */}
               <div className="mb-8">
                 <div className="bg-gray-100 p-1 rounded-xl w-full">
@@ -442,7 +442,7 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Gender */}
-                <div>
+                <div className="relative" style={{ isolation: 'isolate', overflow: 'visible', position: 'relative' }}>
                   <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">
                     Gender *
                   </label>
@@ -452,12 +452,30 @@ export default function RegisterPage() {
                     required
                     value={formData.gender}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white relative z-10"
+                    style={{
+                      position: 'relative',
+                      zIndex: 10,
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      appearance: 'none',
+                      transform: 'translateZ(0)',
+                      backfaceVisibility: 'hidden',
+                      perspective: 1000,
+                      contain: 'layout style',
+                      willChange: 'transform'
+                    }}
                   >
                     <option value="">Select gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>
+                  {/* Custom dropdown arrow */}
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none z-20" style={{ top: '1.75rem' }}>
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 
@@ -514,8 +532,8 @@ export default function RegisterPage() {
               )}
 
               {/* Location Information */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-t pt-6">
-                <div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-t pt-6" style={{ position: 'relative', overflow: 'visible' }}>
+                <div className="relative" style={{ isolation: 'isolate', overflow: 'visible', position: 'relative' }}>
                   <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-2">
                     Area *
                   </label>
@@ -525,7 +543,19 @@ export default function RegisterPage() {
                     required
                     value={formData.area}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white relative z-10"
+                    style={{
+                      position: 'relative',
+                      zIndex: 10,
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      appearance: 'none',
+                      transform: 'translateZ(0)',
+                      backfaceVisibility: 'hidden',
+                      perspective: 1000,
+                      contain: 'layout style',
+                      willChange: 'transform'
+                    }}
                   >
                     <option value="">Select area</option>
                     {loadingLocations ? (
@@ -540,9 +570,15 @@ export default function RegisterPage() {
                       ))
                     )}
                   </select>
+                  {/* Custom dropdown arrow */}
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none z-20" style={{ top: '1.75rem' }}>
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
 
-                <div>
+                <div className="relative" style={{ isolation: 'isolate', overflow: 'visible', position: 'relative' }}>
                   <label htmlFor="examCenter" className="block text-sm font-medium text-gray-700 mb-2">
                     Exam Center *
                   </label>
@@ -552,7 +588,19 @@ export default function RegisterPage() {
                     required
                     value={formData.examCenter}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white relative z-10"
+                    style={{
+                      position: 'relative',
+                      zIndex: 10,
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      appearance: 'none',
+                      transform: 'translateZ(0)',
+                      backfaceVisibility: 'hidden',
+                      perspective: 1000,
+                      contain: 'layout style',
+                      willChange: 'transform'
+                    }}
                   >
                     <option value="">Select exam center</option>
                     {loadingLocations ? (
@@ -569,6 +617,12 @@ export default function RegisterPage() {
                         ))
                     )}
                   </select>
+                  {/* Custom dropdown arrow */}
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none z-20" style={{ top: '1.75rem' }}>
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 
