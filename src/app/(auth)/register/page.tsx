@@ -238,7 +238,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4" style={{ position: 'relative' }}>
+    <div className="px-4" style={{ position: 'relative' }}>
       <div className="max-w-2xl mx-auto" style={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <div className="text-center mb-8">
