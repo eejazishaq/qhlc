@@ -6,7 +6,7 @@
   NODE_VERSION = "18"
 
 # Use Netlify's Next.js plugin for proper API route handling
-[plugins]
+[[plugins]]
   package = "@netlify/plugin-nextjs"
 
 # Redirects for SPA behavior
