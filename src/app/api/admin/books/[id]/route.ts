@@ -3,8 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params
   try {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -34,7 +35,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 })
     }
 
-    const { id } = params
+    const { id } = resolvedParams
     const body = await request.json()
     const { title, description, author, category, is_public } = body
 
@@ -71,8 +72,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const resolvedParams = await params
   try {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -102,7 +104,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 })
     }
 
-    const { id } = params
+    const { id } = resolvedParams
 
     // Get book info for file deletion
     const { data: book, error: fetchError } = await supabase

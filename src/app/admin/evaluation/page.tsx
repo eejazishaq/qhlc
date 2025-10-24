@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { CheckCircle, Clock, Users, Star, Search, Eye, Check, X, FileText, User, Calendar, AlertTriangle, Edit3, Save } from 'lucide-react'
+import { CheckCircle, Clock, Star, Search, Eye, X, FileText, User, Save } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -130,7 +130,11 @@ export default function AdminEvaluationPage() {
     }
   }
 
-  const evaluateSubmission = async (submissionId: string, evaluations: any[]) => {
+  const evaluateSubmission = async (submissionId: string, evaluations: Array<{
+    question_id: string
+    score_awarded: number
+    feedback?: string
+  }>) => {
     try {
       setEvaluating(true)
       const { data: { session } } = await supabase.auth.getSession()
@@ -455,7 +459,7 @@ export default function AdminEvaluationPage() {
                       <div className="mb-4">
                         <p className="text-gray-700 mb-2">{answer.question_text}</p>
                         <div className="bg-gray-50 p-3 rounded">
-                          <p className="text-sm font-medium text-gray-600">Student's Answer:</p>
+                          <p className="text-sm font-medium text-gray-600">Student&apos;s Answer:</p>
                           <p className="text-gray-900 mt-1">{answer.answer_text || 'No answer provided'}</p>
                         </div>
                       </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Edit, Trash2, Clock, Users, Calendar, FileText, CheckCircle, XCircle } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, FileText, CheckCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -23,7 +23,13 @@ interface Exam {
     full_name: string
   }
   questions: Question[]
-  user_exams: any[]
+  user_exams: Array<{
+    id: string
+    user_id: string
+    status: string
+    total_score: number | null
+    submitted_at: string | null
+  }>
 }
 
 interface Question {
@@ -36,7 +42,12 @@ interface Question {
   order_number: number
 }
 
-export default function ViewExamPage({ params }: { params: { id: string } }) {
+export default async function ViewExamPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  return <ViewExamPageClient params={resolvedParams} />
+}
+
+function ViewExamPageClient({ params }: { params: { id: string } }) {
   const { user, profile, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -185,7 +196,7 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Exam Not Found</h2>
-          <p className="text-gray-600 mb-4">The exam you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-4">The exam you&apos;re looking for doesn&apos;t exist.</p>
           <Button onClick={() => router.push('/admin/exams')}>
             Back to Exams
           </Button>
@@ -398,7 +409,7 @@ export default function ViewExamPage({ params }: { params: { id: string } }) {
                   <div className="text-center py-6 sm:py-8">
                     <FileText className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900">No questions</h3>
-                    <p className="mt-1 text-sm text-gray-500">This exam doesn't have any questions yet.</p>
+                    <p className="mt-1 text-sm text-gray-500">This exam doesn&apos;t have any questions yet.</p>
                   </div>
                 )}
               </div>

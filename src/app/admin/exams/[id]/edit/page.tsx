@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Trash2, Save, FileText, ChevronUp, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Save, ChevronUp, ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -17,7 +17,12 @@ interface Question {
   order_number: number
 }
 
-export default function EditExamPage({ params }: { params: { id: string } }) {
+export default async function EditExamPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  return <EditExamPageClient params={resolvedParams} />
+}
+
+function EditExamPageClient({ params }: { params: { id: string } }) {
   const { user, profile, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -114,11 +119,11 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
     }
   }
 
-  const handleExamDataChange = (field: string, value: any) => {
+  const handleExamDataChange = (field: string, value: string | number | boolean) => {
     setExamData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleQuestionChange = (field: string, value: any) => {
+  const handleQuestionChange = (field: string, value: string | number | boolean) => {
     setCurrentQuestion(prev => ({ ...prev, [field]: value }))
   }
 

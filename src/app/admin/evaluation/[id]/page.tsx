@@ -38,7 +38,12 @@ interface AdminAnswer {
   options: string[]
 }
 
-export default function AdminExamResultPage({ params }: { params: { id: string } }) {
+export default async function AdminExamResultPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  return <AdminExamResultPageClient params={resolvedParams} />
+}
+
+function AdminExamResultPageClient({ params }: { params: { id: string } }) {
   const { user, profile, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)

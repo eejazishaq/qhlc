@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase/client'
 
 interface Banner {
@@ -272,12 +273,14 @@ export default function AdminBanners() {
             {banners.map((banner) => (
               <div key={banner.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="relative">
-                  <img
+                  <Image
                     src={banner.image_url}
                     alt={banner.title}
+                    width={400}
+                    height={192}
                     className="w-full h-48 object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://via.placeholder.com/400x200?text=Banner+Image'
+                    onError={() => {
+                      console.error('Image failed to load:', banner.image_url, 'for banner:', banner.title)
                     }}
                   />
                   <div className="absolute top-2 right-2">

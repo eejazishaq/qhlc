@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, CheckCircle, XCircle, Clock, Users, FileText, Eye, Check, X } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, FileText, Check, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -54,7 +54,12 @@ interface Exam {
   results_published: boolean
 }
 
-export default function ExamEvaluationPage({ params }: { params: { id: string } }) {
+export default async function ExamEvaluationPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  return <ExamEvaluationPageClient params={resolvedParams} />
+}
+
+function ExamEvaluationPageClient({ params }: { params: { id: string } }) {
   const { user, profile, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -324,7 +329,7 @@ export default function ExamEvaluationPage({ params }: { params: { id: string } 
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900">
-                        {selectedUserExam.user.full_name}'s Answers
+                        {selectedUserExam.user.full_name}&apos;s Answers
                       </h2>
                       <p className="text-sm text-gray-600">{selectedUserExam.user.mobile}</p>
                     </div>
@@ -338,7 +343,7 @@ export default function ExamEvaluationPage({ params }: { params: { id: string } 
                 </div>
                 
                 <div className="p-6 space-y-6">
-                  {selectedUserExam.user_answers.map((answer, index) => (
+                  {selectedUserExam.user_answers.map((answer) => (
                     <div key={answer.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-medium text-gray-900">
@@ -359,7 +364,7 @@ export default function ExamEvaluationPage({ params }: { params: { id: string } 
                       <div className="mb-4">
                         <p className="text-gray-900 mb-2">{answer.question.question_text}</p>
                         <div className="bg-gray-50 p-3 rounded">
-                          <p className="text-sm text-gray-600 mb-1">Student's Answer:</p>
+                          <p className="text-sm text-gray-600 mb-1">Student&apos;s Answer:</p>
                           <p className="text-gray-900">{answer.answer_text || 'No answer provided'}</p>
                         </div>
                       </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { FileText, Clock, Users, Calendar, Plus, Search, Edit, Trash2, Eye, Play, Pause } from 'lucide-react'
+import { FileText, Clock, Users, Plus, Search, Edit, Trash2, Eye, Play } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -22,8 +22,19 @@ interface Exam {
   created_by: {
     full_name: string
   }
-  questions: any[]
-  user_exams: any[]
+  questions: Array<{
+    id: string
+    question_text: string
+    type: string
+    order_number: number
+  }>
+  user_exams: Array<{
+    id: string
+    user_id: string
+    status: string
+    total_score: number | null
+    submitted_at: string | null
+  }>
 }
 
 export default function AdminExamsPage() {

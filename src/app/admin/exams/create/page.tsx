@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Trash2, Save, FileText } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -62,11 +62,11 @@ export default function CreateExamPage() {
     }
   }, [user, profile, loading, router])
 
-  const handleExamDataChange = (field: string, value: any) => {
+  const handleExamDataChange = (field: string, value: string | number | boolean) => {
     setExamData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleQuestionChange = (field: string, value: any) => {
+  const handleQuestionChange = (field: string, value: string | number | boolean) => {
     setCurrentQuestion(prev => ({ ...prev, [field]: value }))
   }
 

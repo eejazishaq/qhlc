@@ -13,7 +13,6 @@ import {
   Upload, 
   CheckCircle, 
   ArrowRight, 
-  Settings,
   LogOut,
   Menu,
   X,
@@ -21,7 +20,6 @@ import {
   ImageIcon,
   BookOpen,
   Home,
-  Award,
   GraduationCap,
   Globe,
   MapPin,
@@ -36,12 +34,7 @@ export default function AdminLayout({
   const { user, profile, loading, signOut } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
-  const [mounted, setMounted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   useEffect(() => {
     if (!loading && !user) {

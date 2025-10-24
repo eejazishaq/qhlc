@@ -9,11 +9,9 @@ import {
   Download, 
   FileText, 
   Users, 
-  Calendar, 
   TrendingUp, 
   PieChart,
   RefreshCw,
-  Filter,
   Activity
 } from 'lucide-react'
 
@@ -42,7 +40,10 @@ interface AnalyticsData {
   locationStats: {
     totalCenters: number
     activeCenters: number
-    usersByLocation: any[]
+    usersByLocation: Array<{
+      location: string
+      count: number
+    }>
   }
   performanceStats: {
     performanceByType: Record<string, number>
@@ -74,10 +75,10 @@ export default function AdminReportsPage() {
     userType: ''
   })
   const [locations, setLocations] = useState({
-    countries: [] as any[],
-    regions: [] as any[],
-    areas: [] as any[],
-    centers: [] as any[]
+    countries: [] as Array<{ id: string; name: string }>,
+    regions: [] as Array<{ id: string; name: string }>,
+    areas: [] as Array<{ id: string; name: string }>,
+    centers: [] as Array<{ id: string; name: string }>
   })
 
   useEffect(() => {
@@ -236,7 +237,7 @@ export default function AdminReportsPage() {
   // Fix performance data - ensure we handle cases where performanceByType might be empty
   const performanceData = analyticsData && analyticsData.performanceStats.performanceByType ? 
     Object.entries(analyticsData.performanceStats.performanceByType)
-      .filter(([type, score]) => score > 0) // Only include types with actual scores
+      .filter(([, score]) => score > 0) // Only include types with actual scores
       .map(([type, score], index) => {
         const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
         return {
