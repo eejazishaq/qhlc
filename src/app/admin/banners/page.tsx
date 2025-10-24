@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { Plus, Edit, Trash2, Eye, EyeOff, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 
 interface Banner {
@@ -201,47 +201,7 @@ export default function AdminBanners() {
     }
   }
 
-  const handleReorder = async (banner: Banner, direction: 'up' | 'down') => {
-    const currentIndex = banners.findIndex(b => b.id === banner.id)
-    if (currentIndex === -1) return
-
-    const newOrder = direction === 'up' ? banner.display_order - 1 : banner.display_order + 1
-    const targetBanner = banners.find(b => b.display_order === newOrder)
-    
-    if (!targetBanner) return
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        throw new Error('No authentication token available')
-      }
-
-      // Update both banners' display order
-      await Promise.all([
-        fetch(`/api/admin/banners/${banner.id}`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ ...banner, display_order: newOrder }),
-        }),
-        fetch(`/api/admin/banners/${targetBanner.id}`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ ...targetBanner, display_order: banner.display_order }),
-        }),
-      ])
-
-      fetchBanners()
-    } catch (error) {
-      console.error('Error reordering banners:', error)
-    }
-  }
+  // Reorder functionality can be implemented here if needed
 
   const resetForm = () => {
     setFormData({

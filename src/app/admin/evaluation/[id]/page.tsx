@@ -35,7 +35,7 @@ interface AdminAnswer {
   max_score: number
   needs_evaluation: boolean
   correct_answer: string
-  options: any[]
+  options: string[]
 }
 
 export default function AdminExamResultPage({ params }: { params: { id: string } }) {
@@ -82,7 +82,7 @@ export default function AdminExamResultPage({ params }: { params: { id: string }
       if (response.ok) {
         const data = await response.json()
         console.log('===Admin Exam Result API Response===', data)
-        const result = data.submissions?.find((s: any) => s.id === params.id)
+        const result = data.submissions?.find((s: { id: string }) => s.id === params.id)
         console.log('===Found Result===', result)
         if (result) {
           console.log('===Result Answers===', result.answers)
@@ -100,7 +100,19 @@ export default function AdminExamResultPage({ params }: { params: { id: string }
             status: result.status,
             submitted_at: result.submitted_at,
             total_score: result.total_score || 0,
-            answers: result.answers?.map((answer: any) => ({
+            answers: result.answers?.map((answer: {
+              id: string
+              question_id: string
+              question_text: string
+              question_type: string
+              answer_text: string
+              is_correct: boolean | null
+              score_awarded: number
+              max_score: number
+              needs_evaluation: boolean
+              correct_answer: string
+              options: string[]
+            }) => ({
               id: answer.id,
               question_id: answer.question_id,
               question_text: answer.question_text,
@@ -354,7 +366,7 @@ export default function AdminExamResultPage({ params }: { params: { id: string }
                     </div>
 
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Student's Answer:</h4>
+                      <h4 className="font-medium text-gray-900 mb-2">Student&apos;s Answer:</h4>
                       <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
                         <p className="text-gray-900">{answer.answer_text || 'No answer provided'}</p>
                       </div>

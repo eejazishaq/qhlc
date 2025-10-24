@@ -5,9 +5,9 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  experimental: {
-    appDir: true
-  }
+      experimental: {
+        // App directory is now stable in Next.js 15
+      }
 }
 
 module.exports = nextConfig

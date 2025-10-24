@@ -1,6 +1,6 @@
 'use client'
 
-import { MapPin, Phone, Mail, Clock, MessageCircle, Globe, Facebook, Instagram, Twitter } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export default function PublicContactPage() {

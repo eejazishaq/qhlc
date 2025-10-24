@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
-import { supabase } from '@/lib/supabase/client'
+// import { supabase } from '@/lib/supabase/client'
 import { authenticatedFetch } from '@/lib/utils/api'
-import { Plus, Search, X, Edit, Trash2, MapPin, Phone, Mail, FileText, Calendar, Users, MapPin as MapPinIcon, ExternalLink, AlertCircle } from 'lucide-react'
+import { Plus, Search, X, Edit, Trash2, MapPin, Phone, Mail, FileText, MapPin as MapPinIcon, ExternalLink, AlertCircle } from 'lucide-react'
 
 interface Class {
   id: string
@@ -711,7 +711,7 @@ export default function AdminClassesPage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mt-4">Delete Class</h3>
               <p className="text-sm text-gray-500 mt-2">
-                Are you sure you want to delete "{selectedClass?.title}"? This action cannot be undone.
+                Are you sure you want to delete &quot;{selectedClass?.title}&quot;? This action cannot be undone.
               </p>
               <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-3 mt-6">
                 <button

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
-import { Plus, Search, X, Edit, Trash2, FileText, Download, Eye, Upload, BookOpen, Calendar, User, Tag } from 'lucide-react'
+import { Plus, Search, X, Edit, Trash2, FileText, Download, Eye, Upload, BookOpen } from 'lucide-react'
 
 interface Book {
   id: string
@@ -220,7 +220,7 @@ export default function BooksPage() {
       const filePath = `books/${fileName}`
       
       // Upload to Supabase storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('books')
         .upload(filePath, selectedFile, {
           cacheControl: '3600',
@@ -831,7 +831,7 @@ export default function BooksPage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mt-4">Delete Book</h3>
               <p className="text-sm text-gray-500 mt-2">
-                Are you sure you want to delete "{selectedBook?.title}"? This action cannot be undone.
+                Are you sure you want to delete &quot;{selectedBook?.title}&quot;? This action cannot be undone.
               </p>
               <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-3 mt-6">
                 <button

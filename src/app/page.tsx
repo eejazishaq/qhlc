@@ -89,7 +89,7 @@ export default function LandingPage() {
                         src={banner.image_url}
                         alt={banner.title}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
+                        onError={() => {
                           console.error('Image failed to load:', banner.image_url, 'for banner:', banner.title)
                         }}
                         loading={index === 0 ? 'eager' : 'lazy'}
@@ -173,13 +173,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto text-center">
           <div className="mb-16">
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-900 mb-8 leading-tight">
-              Qur'an Hadees &{' '}
+              Qur&apos;an Hadees &{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                 Learning Course
               </span>
             </h1>
             <p className="text-2xl md:text-3xl text-gray-600 max-w-4xl mx-auto mb-12 leading-relaxed">
-              A comprehensive web platform for Qur'an Hadees learning, Learning Course, and educational administration in GCC.
+              A comprehensive web platform for Qur&apos;an Hadees learning, Learning Course, and educational administration in GCC.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Link
@@ -225,7 +225,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Learn Qur'an, Hadees & Islamic Studies Online
+              Learn Qur&apos;an, Hadees & Islamic Studies Online
             </h2>
             <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               We carefully choose our qualified tutors who are certified in Islamic studies to maintain the highest quality of education throughout your learning journey. Experience interactive, live sessions that provide both deep understanding and practical application of Islamic teachings.

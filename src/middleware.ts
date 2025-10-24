@@ -1,7 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function middleware() {
   // Temporarily disabled for development
   return NextResponse.next()
 }

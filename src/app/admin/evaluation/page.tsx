@@ -49,7 +49,12 @@ export default function AdminEvaluationPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [examFilter, setExamFilter] = useState('all')
-  const [exams, setExams] = useState<any[]>([])
+  const [exams, setExams] = useState<Array<{
+    id: string
+    title: string
+    total_marks: number
+    passing_marks: number
+  }>>([])
 
   useEffect(() => {
     setMounted(true)
