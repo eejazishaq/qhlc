@@ -1,3 +1,5 @@
+'use client'
+
 import { PublicHeader } from '@/components/public/PublicHeader'
 import { PublicFooter } from '@/components/public/PublicFooter'
 

@@ -105,7 +105,6 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1e40af" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
       </head>
       <body className={inter.className}>
         <div id="root">
