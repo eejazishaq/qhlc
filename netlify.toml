@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  NODE_ENV = "production"
 
 # Use Netlify's Next.js plugin for proper API route handling
 [[plugins]]
