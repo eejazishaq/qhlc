@@ -41,44 +41,45 @@ export function useAuth() {
     const getInitialSession = async () => {
       try {
         console.log('Getting initial session...')
-        console.log('eeeeeeeen...', await supabase.auth.getSession())
         
-        // First try to get the current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-        console.log('Current user result:', { user: !!user, error: userError?.message })
-        
-        // Then get the session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        console.log('Session result:', { session: !!session, error: sessionError?.message })
-        
-        if (userError) {
-          console.error('User error:', userError)
-        }
         
         if (sessionError) {
           console.error('Session error:', sessionError)
         }
 
-        // Use user from session if available, otherwise use direct user call
-        const currentUser = session?.user || user
+        const currentUser = session?.user
         
         if (currentUser) {
           console.log('User found:', currentUser.email)
-          await fetchProfile(currentUser.id)
-          setAuthState(prev => ({ 
-            ...prev, 
-            user: currentUser, 
-            session, 
-            loading: false 
-          }))
+          
+          // Fetch profile
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single()
+
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error('Error fetching profile:', profileError)
+          }
+
+          setAuthState({
+            user: currentUser,
+            session,
+            profile: profile || null,
+            loading: false,
+            error: null
+          })
         } else {
           console.log('No user found')
-          setAuthState(prev => ({ 
-            ...prev, 
-            user: null, 
-            session: null, 
-            loading: false 
-          }))
+          setAuthState({
+            user: null,
+            session: null,
+            profile: null,
+            loading: false,
+            error: null
+          })
         }
       } catch (error) {
         console.error('Failed to get session:', error)
@@ -92,30 +93,70 @@ export function useAuth() {
 
     getInitialSession()
 
-    // Listen for auth changes
+    // Listen for auth changes - IMPORTANT: Non-async callback to avoid deadlocks
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state change:', event, session?.user?.email)
-        setAuthState(prev => ({ ...prev, loading: true }))
+        
+        if (event === 'INITIAL_SESSION') {
+          // Already handled above, skip
+          return
+        }
 
+        if (event === 'TOKEN_REFRESHED') {
+          // Just update session, no loading, no profile refetch
+          console.log('Token refreshed')
+          setAuthState(prev => ({
+            ...prev,
+            session,
+            user: session?.user || null
+          }))
+          return
+        }
+
+        if (event === 'SIGNED_OUT') {
+          console.log('User signed out')
+          setAuthState({
+            user: null,
+            profile: null,
+            session: null,
+            loading: false,
+            error: null
+          })
+          return
+        }
+
+        // For SIGNED_IN and USER_UPDATED events
         if (session?.user) {
           console.log('User authenticated:', session.user.email)
-          await fetchProfile(session.user.id)
-          setAuthState(prev => ({ 
-            ...prev, 
-            user: session.user, 
-            session, 
-            loading: false 
-          }))
-        } else {
-          console.log('User signed out')
-          setAuthState(prev => ({ 
-            ...prev, 
-            user: null, 
-            profile: null, 
-            session: null, 
-            loading: false 
-          }))
+          
+          // Use setTimeout to avoid deadlock as per Supabase docs
+          setTimeout(async () => {
+            try {
+              setAuthState(prev => ({ ...prev, loading: true }))
+              
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single()
+
+              if (profileError && profileError.code !== 'PGRST116') {
+                console.error('Error fetching profile:', profileError)
+              }
+
+              setAuthState({
+                user: session.user,
+                session,
+                profile: profile || null,
+                loading: false,
+                error: null
+              })
+            } catch (error) {
+              console.error('Error in auth state change:', error)
+              setAuthState(prev => ({ ...prev, loading: false }))
+            }
+          }, 0)
         }
       }
     )
@@ -133,19 +174,19 @@ export function useAuth() {
         .single()
 
       if (error) {
-        // Don't log error if profile doesn't exist yet (during registration)
         if (error.code !== 'PGRST116') {
           console.error('Error fetching profile:', error)
         } else {
           console.log('Profile not found for user:', userId)
         }
-        return
+        return null
       }
 
       console.log('Profile fetched successfully:', profile)
-      setAuthState(prev => ({ ...prev, profile }))
+      return profile
     } catch (error) {
       console.error('Error fetching profile:', error)
+      return null
     }
   }
 
@@ -176,10 +217,6 @@ export function useAuth() {
         return { error: 'Invalid credentials' }
       }
 
-      // Since we can't directly get the email from the client side,
-      // we'll need to use a different approach. Let me try to use the API endpoint
-      // to get the email and then authenticate
-      
       try {
         const response = await fetch('/api/auth/serial-login', {
           method: 'POST',
@@ -219,26 +256,7 @@ export function useAuth() {
           return { error: 'Invalid credentials' }
         }
 
-        if (data.user) {
-          console.log('Serial number signIn successful for user:', data.user.email)
-          // Set the user and session immediately
-          setAuthState(prev => ({ 
-            ...prev, 
-            user: data.user, 
-            session: data.session,
-            loading: false 
-          }))
-          
-          // Fetch the profile
-          await fetchProfile(data.user.id)
-        } else {
-          // No user returned, set loading to false
-          setAuthState(prev => ({ 
-            ...prev, 
-            loading: false 
-          }))
-        }
-
+        // Auth state change will handle the rest
         return { data }
         
       } catch (apiError) {
@@ -290,26 +308,7 @@ export function useAuth() {
         return { error: error.message }
       }
 
-      if (data.user) {
-        console.log('SignIn successful for user:', data.user.email)
-        // Set the user and session immediately
-        setAuthState(prev => ({ 
-          ...prev, 
-          user: data.user, 
-          session: data.session,
-          loading: false 
-        }))
-        
-        // Fetch the profile
-        await fetchProfile(data.user.id)
-      } else {
-        // No user returned, set loading to false
-        setAuthState(prev => ({ 
-          ...prev, 
-          loading: false 
-        }))
-      }
-
+      // Auth state change will handle the rest
       return { data }
     } catch (error) {
       console.error('SignIn catch error:', error)
@@ -370,8 +369,6 @@ export function useAuth() {
 
         if (profileError) {
           console.error('Error creating profile:', profileError)
-          // Don't fail the signup if profile creation fails
-          // The user can still sign in and complete their profile later
         } else {
           console.log('Profile created successfully')
           
@@ -383,22 +380,9 @@ export function useAuth() {
           
           if (signInError) {
             console.error('Auto sign-in error:', signInError)
-            // Don't fail the signup if auto sign-in fails
           } else {
             console.log('Auto sign-in successful')
-            // Update auth state with the new session
-            setAuthState(prev => ({ 
-              ...prev, 
-              user: signInData.user, 
-              session: signInData.session,
-              loading: false 
-            }))
-            
-            // Fetch the profile for the signed-in user
-            if (signInData.user) {
-              await fetchProfile(signInData.user.id)
-            }
-            
+            // Auth state change will handle the rest
             return { data: signInData }
           }
         }
@@ -438,14 +422,7 @@ export function useAuth() {
         return { error: error.message }
       }
 
-      setAuthState(prev => ({ 
-        ...prev, 
-        user: null, 
-        profile: null, 
-        session: null, 
-        loading: false 
-      }))
-
+      // Auth state change will handle the rest
       return { success: true }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Sign out failed'
@@ -508,4 +485,4 @@ export function useAuth() {
     updateProfile,
     clearError
   }
-} 
+}

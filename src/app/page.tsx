@@ -221,7 +221,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+      {/* <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
@@ -234,7 +234,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {/* Students */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="bg-gradient-to-br from-blue-100 to-blue-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Users className="w-10 h-10 text-blue-600" />
               </div>
@@ -243,7 +243,7 @@ export default function LandingPage() {
             </div>
             
             {/* Courses */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="bg-gradient-to-br from-green-100 to-green-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="w-10 h-10 text-green-600" />
               </div>
@@ -252,7 +252,7 @@ export default function LandingPage() {
             </div>
             
             {/* Tutors */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="bg-gradient-to-br from-purple-100 to-purple-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Award className="w-10 h-10 text-purple-600" />
               </div>
@@ -261,7 +261,7 @@ export default function LandingPage() {
             </div>
             
             {/* Countries */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="bg-gradient-to-br from-orange-100 to-orange-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Globe className="w-10 h-10 text-orange-600" />
               </div>
@@ -270,10 +270,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Why Choose Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
@@ -286,7 +286,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Flexible Learning */}
-            <div className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
+            {/* <div className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="bg-gradient-to-br from-blue-100 to-blue-200 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Smartphone className="w-8 h-8 text-blue-600" />
               </div>
@@ -297,7 +297,7 @@ export default function LandingPage() {
             </div>
 
             {/* Experience */}
-            <div className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
+            {/* <div className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="bg-gradient-to-br from-green-100 to-green-200 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Award className="w-8 h-8 text-green-600" />
               </div>
@@ -308,7 +308,7 @@ export default function LandingPage() {
             </div>
 
             {/* Qualified Tutors */}
-            <div className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
+            {/* <div className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="bg-gradient-to-br from-purple-100 to-purple-200 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Users className="w-8 h-8 text-purple-600" />
               </div>
@@ -319,7 +319,7 @@ export default function LandingPage() {
             </div>
 
             {/* Student-Centered */}
-            <div className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
+            {/* <div className="text-center p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="bg-gradient-to-br from-orange-100 to-orange-200 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <BookOpen className="w-8 h-8 text-orange-600" />
               </div>
@@ -330,10 +330,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Courses Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+      {/* <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
@@ -346,7 +346,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Quran Classes for Kids */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+            {/* <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
               <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                 <BookOpen className="w-16 h-16 text-white" />
               </div>
@@ -362,7 +362,7 @@ export default function LandingPage() {
             </div>
 
             {/* Islamic Studies */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+            {/* <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
               <div className="h-48 bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center">
                 <Award className="w-16 h-16 text-white" />
               </div>
@@ -378,7 +378,7 @@ export default function LandingPage() {
             </div>
 
             {/* Arabic Course */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+            {/* <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
               <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
                 <Globe className="w-16 h-16 text-white" />
               </div>
@@ -394,7 +394,7 @@ export default function LandingPage() {
             </div>
 
             {/* Hadees Course */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+            {/* <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
               <div className="h-48 bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
                 <BookOpen className="w-16 h-16 text-white" />
               </div>
@@ -410,7 +410,7 @@ export default function LandingPage() {
             </div>
 
             {/* Exam Management */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+            {/* <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
               <div className="h-48 bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center">
                 <Shield className="w-16 h-16 text-white" />
               </div>
@@ -426,7 +426,7 @@ export default function LandingPage() {
             </div>
 
             {/* Advanced Studies */}
-            <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+            {/* <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
               <div className="h-48 bg-gradient-to-br from-teal-500 to-green-600 flex items-center justify-center">
                 <Award className="w-16 h-16 text-white" />
               </div>
@@ -442,10 +442,10 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Testimonials Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
@@ -458,7 +458,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Testimonial 1 */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg">
+            {/* <div className="bg-white p-8 rounded-2xl shadow-lg">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
                   <span className="text-blue-600 font-bold">S</span>
@@ -474,7 +474,7 @@ export default function LandingPage() {
             </div>
 
             {/* Testimonial 2 */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg">
+            {/* <div className="bg-white p-8 rounded-2xl shadow-lg">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
                   <span className="text-green-600 font-bold">A</span>
@@ -490,7 +490,7 @@ export default function LandingPage() {
             </div>
 
             {/* Testimonial 3 */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg">
+            {/* <div className="bg-white p-8 rounded-2xl shadow-lg">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
                   <span className="text-purple-600 font-bold">F</span>
@@ -506,7 +506,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
