@@ -15,9 +15,7 @@ export function PublicHeader() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-3">
-              {/* <div className="bg-blue-600 p-2 rounded-lg"> */}
-                <Logo width={32} height={32} className="w-8 h-8" />
-              {/* </div> */}
+              <Logo width={32} height={32} className="w-8 h-8" />
               <span className="text-2xl font-bold text-gray-900">QHLC</span>
             </Link>
           </div>

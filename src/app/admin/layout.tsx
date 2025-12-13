@@ -24,7 +24,7 @@ import {
   MapPin,
   Building2
 } from 'lucide-react'
-import { Logo } from '@/components/Logo'
+import { Logo, LogoIcon } from '@/components/Logo'
 
 export default function AdminLayout({
   children,
@@ -88,7 +88,7 @@ export default function AdminLayout({
       group: 'Course Management',
       items: [
         { name: 'Classes', href: '/admin/classes', icon: GraduationCap },
-        { name: 'Books', href: '/admin/books', icon: Logo }
+        { name: 'Books', href: '/admin/books', icon: LogoIcon }
       ]
     },
     {

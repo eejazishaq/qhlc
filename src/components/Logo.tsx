@@ -31,8 +31,13 @@ export function Logo({ width = 24, height = 24, className = '', showBackground =
   return logo
 }
 
-// For use as an icon component in navigation menus
+// For use as an icon component in navigation menus (compatible with lucide-react icon interface)
 export function LogoIcon({ className = '' }: { className?: string }) {
-  return <Logo width={20} height={20} className={className} />
+  // Extract size from className if present (e.g., "h-5 w-5" = 20px), otherwise default to 20px
+  const size = className.includes('h-5') || className.includes('w-5') ? 20 : 
+                className.includes('h-6') || className.includes('w-6') ? 24 :
+                className.includes('h-4') || className.includes('w-4') ? 16 : 20
+  
+  return <Logo width={size} height={size} className={className} />
 }
 

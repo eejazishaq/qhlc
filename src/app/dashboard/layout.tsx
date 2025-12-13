@@ -20,7 +20,7 @@ import {
   Building2,
   ClipboardList
 } from 'lucide-react'
-import { Logo } from '@/components/Logo'
+import { Logo, LogoIcon } from '@/components/Logo'
 
 export default function DashboardLayout({
   children,
@@ -210,7 +210,7 @@ export default function DashboardLayout({
               {
                 name: 'Exams',
                 href: '/admin/exams',
-                icon: Logo,
+                icon: LogoIcon,
                 current: pathname.startsWith('/admin/exams')
               },
               {
