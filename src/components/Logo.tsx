@@ -1,5 +1,3 @@
-import Image from 'next/image'
-
 interface LogoProps {
   width?: number
   height?: number
@@ -9,14 +7,13 @@ interface LogoProps {
 
 export function Logo({ width = 24, height = 24, className = '', showBackground = false }: LogoProps) {
   const logo = (
-    <Image
+    <img
       src="/logo.jpg"
       alt="QHLC Logo"
       width={width}
       height={height}
       className={className}
       style={{ objectFit: 'contain' }}
-      unoptimized
     />
   )
 

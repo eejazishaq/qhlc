@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { Users, Award, Smartphone, Globe, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { useEffect, useState } from 'react'
@@ -164,13 +163,11 @@ export default function LandingPage() {
                 {banners.map((banner, index) => (
                   <div key={banner.id} className="w-full flex-shrink-0 h-full">
                     <div className="relative w-full h-full">
-                      <Image
+                      <img
                         src={banner.image_url}
                         alt={banner.title}
-                        fill
-                        className="object-fill sm:object-cover"
-                        priority={index === 0}
-                        sizes="100vw"
+                        className="w-full h-full object-fill sm:object-cover"
+                        loading={index === 0 ? 'eager' : 'lazy'}
                       />
                       {/* Gradient overlay for better text readability */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
