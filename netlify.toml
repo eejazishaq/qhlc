@@ -1,6 +1,10 @@
 [build]
   command = "npm run build"
   publish = ".next"
+  
+# Copy public directory to output
+[build.processing]
+  skip_processing = false
 
 [build.environment]
   NODE_VERSION = "18"
