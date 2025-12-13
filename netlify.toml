@@ -1,10 +1,6 @@
 [build]
   command = "npm run build"
   publish = ".next"
-  
-# Copy public directory to output
-[build.processing]
-  skip_processing = false
 
 [build.environment]
   NODE_VERSION = "18"
@@ -13,6 +9,11 @@
 # Use Netlify's Next.js plugin for proper API route handling
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Ensure static files are properly handled
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["sharp"]
 
 # Note: With @netlify/plugin-nextjs, Next.js handles routing automatically
 # No catch-all redirect needed as it interferes with static file serving
