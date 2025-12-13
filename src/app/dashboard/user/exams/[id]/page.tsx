@@ -12,7 +12,6 @@ import {
   ArrowRight, 
   Save, 
   AlertTriangle,
-  BookOpen,
   Flag,
   Eye,
   EyeOff,
@@ -25,6 +24,7 @@ import {
   Award
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import { Logo } from '@/components/Logo'
 import Button from '@/components/ui/Button'
 
 interface Question {
@@ -577,7 +577,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               {/* Mobile Progress */}
               <div className="sm:hidden">
                 <div className="flex items-center space-x-1">
-                  <BookOpen className="w-3 h-3 text-gray-500" />
+                  <Logo width={12} height={12} className="w-3 h-3" />
                   <span className="text-xs text-gray-600">
                     {getAnsweredQuestions()}/{questions.length}
                   </span>
@@ -599,7 +599,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               {/* Progress - Desktop */}
               <div className="hidden sm:block">
                 <div className="flex items-center space-x-2">
-                  <BookOpen className="w-4 h-4 text-gray-500" />
+                  <Logo width={16} height={16} className="w-4 h-4" />
                   <span className="text-sm text-gray-600">
                     {getAnsweredQuestions()}/{questions.length} answered
                   </span>

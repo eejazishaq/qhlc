@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, User, Phone, BookOpen, Users, Baby, Copy, Check } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Phone, Users, Baby, Copy, Check } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
 
@@ -244,7 +245,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <div className="bg-blue-600 p-3 rounded-full">
-              <BookOpen className="w-8 h-8 text-white" />
+              <Logo width={32} height={32} className="w-8 h-8" />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Join QHLC</h1>

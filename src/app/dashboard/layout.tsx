@@ -10,7 +10,6 @@ import {
   FileText, 
   BarChart3, 
   Award, 
-  BookOpen, 
   BookMarked,
   Users, 
   Upload, 
@@ -21,6 +20,7 @@ import {
   Building2,
   ClipboardList
 } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 
 export default function DashboardLayout({
   children,
@@ -210,7 +210,7 @@ export default function DashboardLayout({
               {
                 name: 'Exams',
                 href: '/admin/exams',
-                icon: BookOpen,
+                icon: Logo,
                 current: pathname.startsWith('/admin/exams')
               },
               {
@@ -342,7 +342,7 @@ export default function DashboardLayout({
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center">
-              <BookOpen className="w-8 h-8 text-blue-600" />
+              <Logo width={32} height={32} className="w-8 h-8" />
               <span className="ml-2 text-xl font-bold text-gray-900">QHLC</span>
             </div>
             <button

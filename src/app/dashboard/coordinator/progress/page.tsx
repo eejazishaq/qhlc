@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { BookOpen, BarChart3, TrendingUp, Users, Search, Plus, Edit } from 'lucide-react'
+import { BarChart3, TrendingUp, Users, Search, Plus, Edit } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 
 export default function CoordinatorProgressPage() {
   const { user, profile, loading } = useAuth()
@@ -95,7 +96,7 @@ export default function CoordinatorProgressPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="bg-yellow-100 p-3 rounded-full">
-                <BookOpen className="w-6 h-6 text-yellow-600" />
+                <Logo width={24} height={24} className="w-6 h-6" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Avg. Progress</p>
@@ -218,7 +219,7 @@ export default function CoordinatorProgressPage() {
                 <h3 className="text-lg font-semibold text-gray-900">Export Data</h3>
                 <p className="text-gray-600">Export progress data to Excel</p>
               </div>
-              <BookOpen className="w-8 h-8 text-purple-600" />
+              <Logo width={32} height={32} className="w-8 h-8" />
             </div>
           </div>
         </div>

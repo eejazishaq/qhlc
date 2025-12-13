@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Clock, Award, Play, CheckCircle } from 'lucide-react'
+import { Clock, Award, Play, CheckCircle } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 import Link from 'next/link'
 
 export default function MockExamsPage() {
@@ -55,7 +56,7 @@ export default function MockExamsPage() {
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-green-100 p-2 rounded-full">
-                <BookOpen className="w-6 h-6 text-green-600" />
+                <Logo width={24} height={24} className="w-6 h-6" />
               </div>
             </div>
           </div>
@@ -69,7 +70,7 @@ export default function MockExamsPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="bg-green-100 p-3 rounded-full">
-                <BookOpen className="w-6 h-6 text-green-600" />
+                <Logo width={24} height={24} className="w-6 h-6" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Mock Exams Taken</p>
@@ -115,7 +116,9 @@ export default function MockExamsPage() {
               </div>
             ) : (
               <div className="text-center text-gray-500 py-8">
-                <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <div className="flex justify-center mb-4">
+                  <Logo width={48} height={48} className="w-12 h-12 opacity-30" />
+                </div>
                 <p>No mock exams available</p>
                 <p className="text-sm">Check back later for practice exams</p>
               </div>

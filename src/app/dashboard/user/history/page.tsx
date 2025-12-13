@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { 
-  BookOpen, 
   Clock, 
   Award, 
   CheckCircle, 
@@ -17,6 +16,7 @@ import {
   Eye,
   RefreshCw
 } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
@@ -256,7 +256,7 @@ export default function ExamHistoryPage() {
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center">
               <div className="bg-blue-100 p-2 sm:p-3 rounded-full">
-                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                <Logo width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="ml-3 sm:ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Published Results</p>

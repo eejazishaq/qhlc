@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
-import { Plus, Search, X, Edit, Trash2, FileText, Download, Eye, Upload, BookOpen } from 'lucide-react'
+import { Plus, Search, X, Edit, Trash2, FileText, Download, Eye, Upload } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 
 interface Book {
   id: string
@@ -518,7 +519,9 @@ export default function BooksPage() {
             </div>
           ) : books.length === 0 ? (
             <div className="text-center py-8">
-              <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <div className="flex justify-center mb-4">
+                <Logo width={48} height={48} className="w-12 h-12 opacity-30" />
+              </div>
               <p className="text-sm">No books found</p>
               <p className="text-xs text-gray-500">Books will appear here once they are uploaded</p>
             </div>
@@ -645,7 +648,9 @@ export default function BooksPage() {
               ) : books.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <div className="flex justify-center mb-4">
+                <Logo width={48} height={48} className="w-12 h-12 opacity-30" />
+              </div>
                     <p>No books found</p>
                     <p className="text-sm">Books will appear here once they are uploaded</p>
                   </td>

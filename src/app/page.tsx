@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, Users, Award, Smartphone, Globe, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, Award, Smartphone, Globe, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 import { useEffect, useState } from 'react'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import { PublicFooter } from '@/components/public/PublicFooter'
@@ -210,7 +211,9 @@ export default function LandingPage() {
                   <div className="text-white text-sm font-semibold">QHLC</div>
                 </div>
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white text-center">
-                  <BookOpen className="w-12 h-12 mx-auto mb-3" />
+                  <div className="flex justify-center mb-3">
+                    <Logo width={48} height={48} className="w-12 h-12" />
+                  </div>
                   <div className="text-lg font-semibold">Quranic Learning Portal</div>
                   <div className="text-sm opacity-90 mt-1">Access anywhere, anytime</div>
                 </div>

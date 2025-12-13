@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { BookOpen, Mail, Phone } from 'lucide-react'
+import { Mail, Phone } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 
 export function PublicFooter() {
   return (
@@ -11,8 +12,8 @@ export function PublicFooter() {
             {/* Brand Section */}
             <div className="md:col-span-1 min-w-0">
               <div className="flex items-center mb-6">
-                <div className="bg-blue-600 p-2 rounded-lg mr-3 flex-shrink-0">
-                  <BookOpen className="w-6 h-6 text-white" />
+                <div className="mr-3 flex-shrink-0">
+                  <Logo width={28} height={28} className="w-7 h-7" />
                 </div>
                 <span className="text-2xl font-bold text-white">QHLC</span>
               </div>

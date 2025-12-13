@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Clock, Award, Play, CheckCircle, XCircle, AlertCircle, Calendar, Users, FileText } from 'lucide-react'
+import { Clock, Award, Play, CheckCircle, XCircle, AlertCircle, Calendar, Users, FileText } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -326,7 +327,7 @@ export default function UserExamsPage() {
             </div>
             <div className="flex items-center justify-center sm:justify-end">
               <div className="bg-blue-100 p-2 rounded-full">
-                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                <Logo width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
           </div>
@@ -351,7 +352,7 @@ export default function UserExamsPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="bg-blue-100 p-2 sm:p-3 rounded-full">
-                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                  <Logo width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div className="ml-3 sm:ml-4">
                   <p className="text-xs sm:text-sm font-medium text-gray-600">Available Exams</p>
@@ -470,7 +471,9 @@ export default function UserExamsPage() {
               </div>
             ) : availableExams.filter(exam => exam.completed_attempts.length === 0).length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <div className="flex justify-center mb-4">
+                  <Logo width={48} height={48} className="w-12 h-12 opacity-30" />
+                </div>
                 <p>No exams available</p>
                 <p className="text-sm">Check back later for new exams</p>
               </div>
@@ -500,7 +503,7 @@ export default function UserExamsPage() {
                         <span>{formatDuration(exam.duration)}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
-                        <BookOpen className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <Logo width={16} height={16} className="w-4 h-4 mr-2 flex-shrink-0" />
                         <span>{exam.question_count} questions</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">

@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Search, Filter, BookOpen, Download, Loader2 } from 'lucide-react'
+import { Search, Filter, Download, Loader2 } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 
 interface Book {
   id: string
@@ -169,7 +170,7 @@ export default function PublicBooksPage() {
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                        <BookOpen className="w-5 h-5 text-blue-600" />
+                        <Logo width={24} height={24} className="w-5 h-5" />
                       </div>
                     </div>
                     <div className="min-w-0">

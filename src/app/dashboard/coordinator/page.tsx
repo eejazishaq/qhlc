@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { Users, BookOpen, Calendar, Award, Clock, User, BarChart3, CheckCircle, XCircle } from 'lucide-react'
+import { Users, Calendar, Award, Clock, User, BarChart3, CheckCircle, XCircle } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 import Link from 'next/link'
 
 export default function CoordinatorDashboard() {
@@ -87,7 +88,7 @@ export default function CoordinatorDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="bg-yellow-100 p-3 rounded-full">
-                <BookOpen className="w-6 h-6 text-yellow-600" />
+                <Logo width={24} height={24} className="w-6 h-6" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Books Issued</p>
@@ -142,7 +143,7 @@ export default function CoordinatorDashboard() {
                   <h3 className="text-lg font-semibold text-gray-900">Manage Books</h3>
                   <p className="text-gray-600">Issue and track book handovers</p>
                 </div>
-                <BookOpen className="w-8 h-8 text-yellow-600" />
+                <Logo width={32} height={32} className="w-8 h-8" />
               </div>
             </div>
           </Link>
