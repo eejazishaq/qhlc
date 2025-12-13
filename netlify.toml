@@ -10,11 +10,8 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Redirects for SPA behavior
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Note: With @netlify/plugin-nextjs, Next.js handles routing automatically
+# No catch-all redirect needed as it interferes with static file serving
 
 [[headers]]
   for = "/*"
@@ -31,5 +28,16 @@
 
 [[headers]]
   for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Ensure static files from public directory are served correctly
+[[headers]]
+  for = "/logo.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/banners/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
