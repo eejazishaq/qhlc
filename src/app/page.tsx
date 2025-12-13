@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Users, Award, Smartphone, Globe, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { useEffect, useState } from 'react'
@@ -16,14 +17,93 @@ interface Banner {
   display_order: number
 }
 
-export default function LandingPage() {
-  const [banners, setBanners] = useState<Banner[]>([])
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
-  const [loading, setLoading] = useState(true)
+// Static banners from public/banners directory
+const staticBanners: Banner[] = [
+  {
+    id: 'banner-1',
+    title: 'Welcome to QHLC',
+    description: 'Quranic Learning and Exam Management Portal',
+    image_url: '/banners/slide01.jpg',
+    link_url: '/register',
+    display_order: 1
+  },
+  {
+    id: 'banner-2',
+    title: 'Learn Quran & Hadees',
+    description: 'Comprehensive Islamic Education Platform',
+    image_url: '/banners/slide02.jpg',
+    link_url: '/classes',
+    display_order: 2
+  },
+  {
+    id: 'banner-3',
+    title: 'Online Classes',
+    description: 'Study from anywhere, anytime',
+    image_url: '/banners/slide03.jpg',
+    link_url: '/register',
+    display_order: 3
+  },
+  {
+    id: 'banner-4',
+    title: 'Exam Management',
+    description: 'Track your progress and achievements',
+    image_url: '/banners/slide04.jpg',
+    link_url: '/register',
+    display_order: 4
+  },
+  {
+    id: 'banner-5',
+    title: 'Expert Teachers',
+    description: 'Learn from certified Islamic scholars',
+    image_url: '/banners/slide05.jpg',
+    link_url: '/classes',
+    display_order: 5
+  },
+  {
+    id: 'banner-6',
+    title: 'Flexible Learning',
+    description: 'Study at your own pace',
+    image_url: '/banners/slide06.jpg',
+    link_url: '/register',
+    display_order: 6
+  },
+  {
+    id: 'banner-7',
+    title: 'Join Our Community',
+    description: 'Connect with students worldwide',
+    image_url: '/banners/slide07.jpg',
+    link_url: '/register',
+    display_order: 7
+  },
+  {
+    id: 'banner-8',
+    title: 'Certified Programs',
+    description: 'Get recognized certificates',
+    image_url: '/banners/slide08.jpg',
+    link_url: '/register',
+    display_order: 8
+  },
+  {
+    id: 'banner-9',
+    title: 'Start Your Journey',
+    description: 'Begin your Quranic learning today',
+    image_url: '/banners/slide09.jpg',
+    link_url: '/register',
+    display_order: 9
+  },
+  {
+    id: 'banner-10',
+    title: 'Quality Education',
+    description: 'Excellence in Islamic studies',
+    image_url: '/banners/slide010.jpg',
+    link_url: '/register',
+    display_order: 10
+  }
+]
 
-  useEffect(() => {
-    fetchBanners()
-  }, [])
+export default function LandingPage() {
+  const [banners] = useState<Banner[]>(staticBanners)
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0)
 
   // Auto-rotate banners
   useEffect(() => {
@@ -36,22 +116,27 @@ export default function LandingPage() {
     return () => clearInterval(interval)
   }, [banners.length])
 
-  const fetchBanners = async () => {
-    try {
-      const response = await fetch('/api/banners')
-      
-      if (response.ok) {
-        const data = await response.json()
-        setBanners(data.banners || [])
-      } else {
-        console.error('Failed to fetch banners:', response.status)
-      }
-    } catch (error) {
-      console.error('Error fetching banners:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Commented out API banner fetching code - keeping for future reference
+  // const [loading, setLoading] = useState(true)
+  // useEffect(() => {
+  //   fetchBanners()
+  // }, [])
+  // const fetchBanners = async () => {
+  //   try {
+  //     const response = await fetch('/api/banners')
+  //     
+  //     if (response.ok) {
+  //       const data = await response.json()
+  //       setBanners(data.banners || [])
+  //     } else {
+  //       console.error('Failed to fetch banners:', response.status)
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching banners:', error)
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   const nextBanner = () => {
     setCurrentBannerIndex((prev) => (prev + 1) % banners.length)
@@ -70,49 +155,41 @@ export default function LandingPage() {
       <PublicHeader />
 
       {/* Banner Carousel */}
-      {loading ? (
-        <section className="relative bg-white py-8">
-          <div className="max-w-7xl mx-auto text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-500 mt-2">Loading banners...</p>
-          </div>
-        </section>
-      ) : banners.length > 0 ? (
+      {banners.length > 0 && (
         <section className="relative bg-white">
           <div className="w-full">
-            {/* Full-width banner carousel */}
-            <div className="relative overflow-hidden" style={{ height: '80vh' }}>
+            {/* Full-width banner carousel - Responsive height for mobile */}
+            <div className="relative overflow-hidden h-[24vh] sm:h-[70vh] md:h-[80vh]">
               <div className="flex transition-transform duration-500 ease-in-out h-full" style={{ transform: `translateX(-${currentBannerIndex * 100}%)` }}>
                 {banners.map((banner, index) => (
                   <div key={banner.id} className="w-full flex-shrink-0 h-full">
                     <div className="relative w-full h-full">
-                      <img
+                      <Image
                         src={banner.image_url}
                         alt={banner.title}
-                        className="w-full h-full object-cover"
-                        onError={() => {
-                          console.error('Image failed to load:', banner.image_url, 'for banner:', banner.title)
-                        }}
-                        loading={index === 0 ? 'eager' : 'lazy'}
+                        fill
+                        className="object-fill sm:object-cover"
+                        priority={index === 0}
+                        sizes="100vw"
                       />
                       {/* Gradient overlay for better text readability */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
                       
-                      {/* Content overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center text-white px-8 max-w-4xl mx-auto">
-                          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                      {/* Content overlay - Responsive for mobile */}
+                      <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8">
+                        <div className="text-center text-white w-full max-w-4xl mx-auto">
+                          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight">
                             {banner.title}
                           </h1>
                           {banner.description && (
-                            <p className="text-xl md:text-2xl lg:text-3xl mb-8 max-w-3xl mx-auto leading-relaxed opacity-90">
+                            <p className="text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl mb-4 sm:mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed opacity-90 px-2">
                               {banner.description}
                             </p>
                           )}
                           {banner.link_url && (
                             <Link
                               href={banner.link_url}
-                              className="inline-block bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                              className="inline-block bg-white text-gray-900 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-full font-semibold text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
                             >
                               Learn More
                             </Link>
@@ -124,47 +201,44 @@ export default function LandingPage() {
                 ))}
               </div>
               
-              {/* Navigation Arrows */}
+              {/* Navigation Arrows - Responsive sizing and positioning */}
               {banners.length > 1 && (
                 <>
                   <button
                     onClick={prevBanner}
-                    className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+                    className="absolute left-2 sm:left-4 md:left-6 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 sm:p-2.5 md:p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10"
+                    aria-label="Previous banner"
                   >
-                    <ChevronLeft className="w-8 h-8" />
+                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                   </button>
                   <button
                     onClick={nextBanner}
-                    className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+                    className="absolute right-2 sm:right-4 md:right-6 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 sm:p-2.5 md:p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10"
+                    aria-label="Next banner"
                   >
-                    <ChevronRight className="w-8 h-8" />
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
                   </button>
                 </>
               )}
               
-              {/* Dots Indicator */}
+              {/* Dots Indicator - Responsive positioning */}
               {banners.length > 1 && (
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3">
+                <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 sm:space-x-3 z-10">
                   {banners.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => goToBanner(index)}
-                      className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                      className={`w-2 h-2 sm:w-3 sm:h-3 md:w-4 md:h-4 rounded-full transition-all duration-300 ${
                         index === currentBannerIndex 
                           ? 'bg-white scale-125' 
                           : 'bg-white/50 hover:bg-white/75'
                       }`}
+                      aria-label={`Go to banner ${index + 1}`}
                     />
                   ))}
                 </div>
               )}
             </div>
-          </div>
-        </section>
-      ) : (
-        <section className="relative bg-white py-8">
-          <div className="max-w-7xl mx-auto text-center">
-            <p className="text-gray-500">No active banners available</p>
           </div>
         </section>
       )}
