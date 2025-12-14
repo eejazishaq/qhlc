@@ -1,0 +1,30 @@
+# Netlify _redirects file - ensures static files are served
+# With @netlify/plugin-nextjs, files from public/ should be automatically available
+# These redirects ensure they work if there are any routing issues
+
+# Images - must use full path format
+/logo.jpg /logo.jpg 200
+/banners/slide01.jpg /banners/slide01.jpg 200
+/banners/slide02.jpg /banners/slide02.jpg 200
+/banners/slide03.jpg /banners/slide03.jpg 200
+/banners/slide04.jpg /banners/slide04.jpg 200
+/banners/slide05.jpg /banners/slide05.jpg 200
+/banners/slide06.jpg /banners/slide06.jpg 200
+/banners/slide07.jpg /banners/slide07.jpg 200
+/banners/slide08.jpg /banners/slide08.jpg 200
+/banners/slide09.jpg /banners/slide09.jpg 200
+/banners/slide010.jpg /banners/slide010.jpg 200
+/banners/* /banners/:splat 200
+
+# Manifest files
+/site.webmanifest /site.webmanifest 200
+/manifest.json /manifest.json 200
+
+# Favicons
+/favicon.ico /favicon.ico 200
+/favicon.svg /favicon.svg 200
+/favicon-96x96.png /favicon-96x96.png 200
+/apple-touch-icon.png /apple-touch-icon.png 200
+
+# Icons directory
+/icons/* /icons/:splat 200
