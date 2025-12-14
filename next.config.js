@@ -4,6 +4,7 @@ const nextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true,
+    trailingSlash: true,
   },
   eslint: {
     // Disable ESLint during builds
