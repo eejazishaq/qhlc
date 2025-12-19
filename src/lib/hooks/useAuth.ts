@@ -192,7 +192,11 @@ export function useAuth() {
 
   const signInWithSerial = async (serialNumber: string, password: string) => {
     try {
-      console.log('SignIn with serial called with serial:', serialNumber)
+      // Normalize serial number: remove QHLC- prefix if present, trim whitespace
+      // Keep leading zeros as they are part of the serial number
+      const normalizedSerial = serialNumber.trim().replace(/^QHLC-/i, '')
+      
+      console.log('SignIn with serial called:', { original: serialNumber, normalized: normalizedSerial })
       
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         return { error: 'Supabase not configured. Please set up your environment variables.' }
@@ -200,36 +204,23 @@ export function useAuth() {
 
       setAuthState(prev => ({ ...prev, loading: true, error: null }))
       
-      // First, verify that the serial number exists and get the profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, full_name, mobile, user_type, serial_number')
-        .eq('serial_number', serialNumber.trim())
-        .single()
-
-      if (profileError || !profileData) {
-        console.error('Profile lookup error:', profileError)
-        setAuthState(prev => ({ 
-          ...prev, 
-          error: 'Invalid credentials', 
-          loading: false 
-        }))
-        return { error: 'Invalid credentials' }
-      }
-
       try {
         const response = await fetch('/api/auth/serial-login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ serialNumber, password }),
+          body: JSON.stringify({ serialNumber: normalizedSerial, password }),
         })
 
         const result = await response.json()
 
         if (!response.ok || !result.success) {
-          console.error('Serial login API error:', result.error)
+          console.error('Serial login API error:', {
+            status: response.status,
+            error: result.error,
+            result
+          })
           setAuthState(prev => ({ 
             ...prev, 
             error: result.error || 'Invalid credentials', 
@@ -238,13 +229,29 @@ export function useAuth() {
           return { error: result.error || 'Invalid credentials' }
         }
 
+        if (!result.email) {
+          console.error('No email returned from serial login API')
+          setAuthState(prev => ({ 
+            ...prev, 
+            error: 'Invalid credentials', 
+            loading: false 
+          }))
+          return { error: 'Invalid credentials' }
+        }
+
+        console.log('Attempting to sign in with email:', result.email)
+
         // Now that we have the email, sign in with Supabase auth
         const { data, error } = await supabase.auth.signInWithPassword({
           email: result.email,
           password
         })
 
-        console.log('Serial number signIn result:', { success: !error, error: error?.message })
+        console.log('Serial number signIn result:', { 
+          success: !error, 
+          error: error?.message,
+          email: result.email
+        })
 
         if (error) {
           console.error('Serial number signIn error:', error)
@@ -472,6 +479,161 @@ export function useAuth() {
     }
   }
 
+  const resetPassword = async (email: string) => {
+    try {
+      console.log('resetPassword called with email:', email)
+      
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        return { error: 'Supabase not configured. Please set up your environment variables.' }
+      }
+
+      // Use the API route to handle password reset
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        return { error: result.error || 'Failed to send reset email' }
+      }
+
+      if (result.success) {
+        return { success: true, message: result.message }
+      } else {
+        return { error: result.error || 'Failed to send reset email' }
+      }
+    } catch (error) {
+      console.error('resetPassword catch error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email'
+      return { error: errorMessage }
+    }
+  }
+
+  const updatePassword = async (token: string, newPassword: string) => {
+    try {
+      console.log('updatePassword called')
+      
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        return { error: 'Supabase not configured. Please set up your environment variables.' }
+      }
+
+      // Use the API route to handle password update
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, password: newPassword }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        return { error: result.error || 'Failed to reset password' }
+      }
+
+      if (result.success) {
+        return { success: true, message: result.message }
+      } else {
+        return { error: result.error || 'Failed to reset password' }
+      }
+    } catch (error) {
+      console.error('updatePassword catch error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reset password'
+      return { error: errorMessage }
+    }
+  }
+
+  const resetPasswordWithSerial = async (serialNumber: string, mobile: string) => {
+    try {
+      console.log('resetPasswordWithSerial called with serial:', serialNumber)
+      
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        return { error: 'Supabase not configured. Please set up your environment variables.' }
+      }
+
+      // Use the API route to handle serial number password reset
+      const response = await fetch('/api/auth/forgot-password-serial', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ serialNumber, mobile }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        return { error: result.error || 'Failed to reset password' }
+      }
+
+      if (result.success) {
+        return { 
+          success: true, 
+          message: result.message,
+          temporaryPassword: result.temporaryPassword // For display purposes
+        }
+      } else {
+        return { error: result.error || 'Failed to reset password' }
+      }
+    } catch (error) {
+      console.error('resetPasswordWithSerial catch error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reset password'
+      return { error: errorMessage }
+    }
+  }
+
+  const changePassword = async (newPassword: string) => {
+    try {
+      console.log('changePassword called')
+      
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        return { error: 'Supabase not configured. Please set up your environment variables.' }
+      }
+
+      if (!authState.user) {
+        return { error: 'You must be logged in to change your password' }
+      }
+
+      if (newPassword.length < 6) {
+        return { error: 'Password must be at least 6 characters long' }
+      }
+
+      setAuthState(prev => ({ ...prev, loading: true, error: null }))
+
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+
+      if (error) {
+        console.error('Password update error:', error)
+        setAuthState(prev => ({ 
+          ...prev, 
+          error: error.message, 
+          loading: false 
+        }))
+        return { error: error.message }
+      }
+
+      setAuthState(prev => ({ ...prev, loading: false }))
+      return { success: true, message: 'Password updated successfully' }
+    } catch (error) {
+      console.error('changePassword catch error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to change password'
+      setAuthState(prev => ({ 
+        ...prev, 
+        error: errorMessage, 
+        loading: false 
+      }))
+      return { error: errorMessage }
+    }
+  }
+
   const clearError = () => {
     setAuthState(prev => ({ ...prev, error: null }))
   }
@@ -483,6 +645,10 @@ export function useAuth() {
     signUp,
     signOut,
     updateProfile,
+    resetPassword,
+    updatePassword,
+    resetPasswordWithSerial,
+    changePassword,
     clearError
   }
 }

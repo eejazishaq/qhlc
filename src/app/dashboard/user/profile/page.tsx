@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { User, Mail, Phone, MapPin, Calendar, Edit, Save, X } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Calendar, Edit, Save, X, Lock, Eye, EyeOff } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -11,10 +11,19 @@ import ProfileImageUpload from '@/components/forms/ProfileImageUpload'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default function UserProfilePage() {
-  const { user, profile, updateProfile, loading } = useAuth()
+  const { user, profile, updateProfile, changePassword, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    password: '',
+    confirmPassword: ''
+  })
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [areas, setAreas] = useState<{ id: string; name: string; code: string; is_active: boolean }[]>([])
   const [centers, setCenters] = useState<{ id: string; name: string; area_id: string; is_active: boolean }[]>([])
   const [filteredCenters, setFilteredCenters] = useState<{ id: string; name: string; area_id: string; is_active: boolean }[]>([])
@@ -117,6 +126,54 @@ export default function UserProfilePage() {
     })
     setProfileImageUrl(profile?.profile_image || '')
     setIsEditing(false)
+  }
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordData({
+      ...passwordData,
+      [e.target.name]: e.target.value
+    })
+    setPasswordError(null)
+    setPasswordSuccess(false)
+  }
+
+  const handleChangePassword = async () => {
+    setPasswordError(null)
+    setPasswordSuccess(false)
+
+    if (passwordData.password.length < 6) {
+      setPasswordError('Password must be at least 6 characters long')
+      return
+    }
+
+    if (passwordData.password !== passwordData.confirmPassword) {
+      setPasswordError('Passwords do not match')
+      return
+    }
+
+    try {
+      const result = await changePassword(passwordData.password)
+      if (result.error) {
+        setPasswordError(result.error)
+      } else {
+        setPasswordSuccess(true)
+        setPasswordData({ password: '', confirmPassword: '' })
+        setTimeout(() => {
+          setIsChangingPassword(false)
+          setPasswordSuccess(false)
+        }, 2000)
+      }
+    } catch (error) {
+      console.error('Error changing password:', error)
+      setPasswordError('Failed to change password. Please try again.')
+    }
+  }
+
+  const handleCancelPasswordChange = () => {
+    setPasswordData({ password: '', confirmPassword: '' })
+    setPasswordError(null)
+    setPasswordSuccess(false)
+    setIsChangingPassword(false)
   }
 
   if (loading || !mounted) {
@@ -356,6 +413,118 @@ export default function UserProfilePage() {
                   <p className="text-sm font-medium text-gray-900">User Type</p>
                   <p className="text-sm text-gray-500 capitalize">{profile?.user_type || 'user'}</p>
                 </div>
+              </div>
+
+              {/* Password Change Section */}
+              <div className="border-t pt-4">
+                {!isChangingPassword ? (
+                  <Button
+                    onClick={() => setIsChangingPassword(true)}
+                    variant="outline"
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    Change Password
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                        New Password
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Lock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          id="password"
+                          name="password"
+                          type={showPassword ? 'text' : 'password'}
+                          value={passwordData.password}
+                          onChange={handlePasswordChange}
+                          className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter new password"
+                          minLength={6}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                          )}
+                        </button>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters long</p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirm New Password
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Lock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          value={passwordData.confirmPassword}
+                          onChange={handlePasswordChange}
+                          className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Confirm new password"
+                          minLength={6}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {passwordError && (
+                      <div className="text-red-600 text-sm font-medium">
+                        {passwordError}
+                      </div>
+                    )}
+
+                    {passwordSuccess && (
+                      <div className="text-green-600 text-sm font-medium">
+                        Password changed successfully!
+                      </div>
+                    )}
+
+                    <div className="flex space-x-3">
+                      <Button
+                        onClick={handleChangePassword}
+                        disabled={loading}
+                        className="flex-1 flex items-center justify-center"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {loading ? 'Changing...' : 'Change Password'}
+                      </Button>
+                      <Button
+                        onClick={handleCancelPasswordChange}
+                        variant="outline"
+                        className="flex items-center justify-center"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
