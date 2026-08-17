@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/route-client'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient()
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
@@ -48,9 +45,11 @@ export async function GET(request: NextRequest) {
         questions:questions(count),
         user_exams:user_exams(
           id,
+          user_id,
           status,
           total_score,
-          submitted_at
+          submitted_at,
+          started_at
         )
       `)
       .eq('status', 'active')
@@ -77,13 +76,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch available exams' }, { status: 500 })
     }
 
+    // Terminal attempt statuses (after submit; includes admin-published results)
+    const completedStatuses = ['completed', 'evaluated', 'published']
+
     // Process exams to include user attempt information
     const processedExams = exams?.map((exam: any) => {
-      const userAttempts = exam.user_exams || []
-      const completedAttempts = userAttempts.filter((attempt: any) => attempt.status === 'completed' || attempt.status === 'evaluated')
-      const activeAttempts = userAttempts.filter((attempt: any) => 
-        ['pending', 'in_progress'].includes(attempt.status)
+      const userAttempts = (exam.user_exams || []).filter(
+        (attempt: any) => attempt.user_id === user.id
       )
+      const completedAttempts = userAttempts.filter((attempt: any) =>
+        completedStatuses.includes(attempt.status)
+      )
+      const activeAttempts = userAttempts
+        .filter((attempt: any) => ['pending', 'in_progress'].includes(attempt.status))
+        .sort((a: any, b: any) => {
+          const ta = new Date(a.started_at || a.submitted_at || 0).getTime()
+          const tb = new Date(b.started_at || b.submitted_at || 0).getTime()
+          return ta - tb
+        })
 
       return {
         ...exam,

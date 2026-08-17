@@ -50,9 +50,17 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
 
   useEffect(() => {
     if (question) {
+      const tfAnswer = String(question.correct_answer ?? '').toLowerCase()
+      const normalizedTf =
+        tfAnswer === 'true' || tfAnswer === 'false' ? tfAnswer : ''
       setFormData({
         ...question,
-        options: question.options || ['', '', '', '']
+        options:
+          question.type === 'truefalse'
+            ? ['true', 'false']
+            : question.options || ['', '', '', ''],
+        correct_answer:
+          question.type === 'truefalse' ? normalizedTf : question.correct_answer,
       })
     } else {
       setFormData({
@@ -105,9 +113,9 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
     }
 
     if (formData.type === 'truefalse') {
-      if (!formData.correct_answer) {
-        newErrors.correct_answer = 'Correct answer is required for True/False'
-        console.log('Missing truefalse correct_answer')
+      const ca = String(formData.correct_answer || '').toLowerCase()
+      if (ca !== 'true' && ca !== 'false') {
+        newErrors.correct_answer = 'Select True or False as the correct answer'
       }
     }
 
@@ -227,12 +235,20 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
               </label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  type: e.target.value as Question['type'],
-                  correct_answer: '',
-                  options: e.target.value === 'mcq' ? ['', '', '', ''] : []
-                }))}
+                onChange={(e) => {
+                  const t = e.target.value as Question['type']
+                  setFormData((prev) => ({
+                    ...prev,
+                    type: t,
+                    correct_answer: '',
+                    options:
+                      t === 'mcq'
+                        ? ['', '', '', '']
+                        : t === 'truefalse'
+                          ? ['true', 'false']
+                          : [],
+                  }))
+                }}
                 className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="mcq">Multiple Choice</option>
@@ -320,27 +336,56 @@ function QuestionModal({ isOpen, onClose, question, onSave, loading, exams }: Qu
             </div>
           )}
 
-          {/* Correct Answer */}
-          {(formData.type === 'mcq' || formData.type === 'truefalse') && (
+          {/* Correct Answer — MCQ: pick from options; True/False: fixed choices (exam UI uses lowercase true/false) */}
+          {formData.type === 'mcq' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Correct Answer *
               </label>
               <select
                 value={formData.correct_answer}
-                onChange={(e) => setFormData(prev => ({ ...prev, correct_answer: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, correct_answer: e.target.value }))
+                }
                 className={`w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.correct_answer ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
                 <option value="">Select correct answer</option>
-                {formData.options?.map((option, index) => (
-                  option.trim() && (
+                {formData.options?.map((option, index) =>
+                  option.trim() ? (
                     <option key={index} value={option}>
                       {option}
                     </option>
-                  )
-                ))}
+                  ) : null
+                )}
+              </select>
+              {errors.correct_answer && (
+                <p className="text-red-500 text-sm mt-1">{errors.correct_answer}</p>
+              )}
+            </div>
+          )}
+          {formData.type === 'truefalse' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Correct Answer *
+              </label>
+              <select
+                value={
+                  formData.correct_answer === 'true' || formData.correct_answer === 'false'
+                    ? formData.correct_answer
+                    : ''
+                }
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, correct_answer: e.target.value }))
+                }
+                className={`w-full p-2 sm:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.correct_answer ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select correct answer</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
               </select>
               {errors.correct_answer && (
                 <p className="text-red-500 text-sm mt-1">{errors.correct_answer}</p>
@@ -507,22 +552,21 @@ export default function AdminQuestionsPage() {
         : '/api/questions'
       
       const method = selectedQuestion ? 'PUT' : 'POST'
-      
-      // Debug: Log the data being sent
-      console.log('Sending question data:', questionData)
-      console.log('Required fields check:', {
-        exam_id: questionData.exam_id,
-        question_text: questionData.question_text,
-        correct_answer: questionData.correct_answer
-      })
-      
+
+      const payload: Partial<Question> = { ...questionData }
+      if (payload.type === 'truefalse') {
+        payload.options = ['true', 'false']
+        const c = String(payload.correct_answer || '').toLowerCase()
+        payload.correct_answer = c === 'true' || c === 'false' ? c : payload.correct_answer
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify(questionData)
+        body: JSON.stringify(payload)
       })
 
       if (response.ok) {

@@ -38,7 +38,8 @@ interface Exam {
     id: string
     status: string
     total_score: number
-    submitted_at: string
+    submitted_at?: string
+    started_at?: string
   }>
   can_take: boolean
   best_score: number | null
@@ -528,8 +529,14 @@ export default function UserExamsPage() {
                     )}
 
                     <Button
-                      onClick={() => startExam(exam.id)}
-                      disabled={!exam.can_take || startingExam === exam.id}
+                      onClick={() => {
+                        if (!exam.can_take && exam.active_attempts.length > 0) {
+                          router.push(`/dashboard/user/exams/${exam.active_attempts[0].id}`)
+                          return
+                        }
+                        startExam(exam.id)
+                      }}
+                      disabled={startingExam === exam.id}
                       className="w-full py-2 sm:py-3"
                     >
                       {startingExam === exam.id ? (
@@ -591,10 +598,9 @@ export default function UserExamsPage() {
 
                         <Button
                           onClick={() => {
-                            // Find the user exam ID for this completed attempt
-                            const userExam = userExams.find(ue => ue.exam_id === exam.id && ue.status === 'completed')
-                            if (userExam) {
-                              router.push(`/dashboard/user/exams/${userExam.id}/results`)
+                            const attemptId = completedAttempt?.id
+                            if (attemptId) {
+                              router.push(`/dashboard/user/exams/${attemptId}/results`)
                             }
                           }}
                           variant="outline"

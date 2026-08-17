@@ -10,8 +10,7 @@ import {
   Users, 
   Plus,
   Eye,
-  BarChart3,
-  TrendingUp
+  BarChart3
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -20,8 +19,6 @@ interface LocationStats {
   regions: number
   areas: number
   centers: number
-  totalCapacity: number
-  activeCenters: number
 }
 
 export default function LocationsDashboard() {
@@ -31,9 +28,7 @@ export default function LocationsDashboard() {
     countries: 0,
     regions: 0,
     areas: 0,
-    centers: 0,
-    totalCapacity: 0,
-    activeCenters: 0
+    centers: 0
   })
   const [loading, setLoading] = useState(true)
 
@@ -59,17 +54,14 @@ export default function LocationsDashboard() {
       const areasResponse = await authenticatedFetch('/api/admin/locations/areas?limit=1')
       const areasData = await areasResponse.json()
       
-      // Fetch all centers to calculate capacity and active count
-      const centersResponse = await authenticatedFetch('/api/admin/locations/centers?limit=1000')
+      const centersResponse = await authenticatedFetch('/api/admin/locations/centers?limit=1')
       const centersData = await centersResponse.json()
       
       setStats({
         countries: countriesData.pagination?.total || 0,
         regions: regionsData.pagination?.total || 0,
         areas: areasData.pagination?.total || 0,
-        centers: centersData.pagination?.total || 0,
-        totalCapacity: centersData.centers?.reduce((sum: number, center: any) => sum + (center.capacity || 0), 0) || 0,
-        activeCenters: centersData.centers?.filter((center: any) => center.is_active).length || 0
+        centers: centersData.pagination?.total || 0
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -189,30 +181,6 @@ export default function LocationsDashboard() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Capacity Overview */}
-        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base sm:text-lg font-medium text-gray-900">Capacity Overview</h3>
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.totalCapacity}</p>
-              <p className="text-xs sm:text-sm text-gray-600">Total Capacity</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl sm:text-3xl font-bold text-green-600">{stats.activeCenters}</p>
-              <p className="text-xs sm:text-sm text-gray-600">Active Centers</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl sm:text-3xl font-bold text-purple-600">
-                {stats.centers > 0 ? Math.round((stats.activeCenters / stats.centers) * 100) : 0}%
-              </p>
-              <p className="text-xs sm:text-sm text-gray-600">Active Rate</p>
-            </div>
-          </div>
         </div>
 
         {/* Quick Actions */}

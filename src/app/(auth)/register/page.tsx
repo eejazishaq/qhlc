@@ -3,10 +3,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, User, Phone, Users, Baby, Copy, Check } from 'lucide-react'
+import { Eye, EyeOff, Lock, User, Phone, Mail, Users, Baby, Copy, Check } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase/client'
+
+type PhoneDialOption = { value: string; label: string }
+
+/** Used only if no active countries have phone_code in the database */
+const PHONE_DIAL_FALLBACK: PhoneDialOption[] = [{ value: '+966', label: '+966 (SA)' }]
 
 export default function RegisterPage() {
   const [mounted, setMounted] = useState(false)
@@ -16,12 +21,12 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    mobileCountryCode: '+966',
     mobile: '',
+    whatsappCountryCode: '+966',
     whatsapp: '',
     gender: '',
     fatherName: '',
-    dateOfBirth: '',
-    iqamaNumber: '',
     password: '',
     confirmPassword: '',
     area: '',
@@ -32,6 +37,7 @@ export default function RegisterPage() {
   const [copiedField, setCopiedField] = useState<'serial' | 'email' | null>(null)
   const [areas, setAreas] = useState<Array<{ id: string; name: string }>>([])
   const [centers, setCenters] = useState<Array<{ id: string; name: string; area_id: string }>>([])
+  const [phoneDialCodes, setPhoneDialCodes] = useState<PhoneDialOption[]>(PHONE_DIAL_FALLBACK)
   const [loadingLocations, setLoadingLocations] = useState(false)
   const router = useRouter()
   const { loading, user, profile } = useAuth()
@@ -57,6 +63,11 @@ export default function RegisterPage() {
         }
         setAreas(data.areas || [])
         setCenters(data.centers || [])
+        const dial =
+          Array.isArray(data.phoneDialCodes) && data.phoneDialCodes.length > 0
+            ? data.phoneDialCodes
+            : PHONE_DIAL_FALLBACK
+        setPhoneDialCodes(dial)
       } catch (e) {
         console.error('Error loading locations', e)
       } finally {
@@ -65,6 +76,18 @@ export default function RegisterPage() {
     }
     loadLocations()
   }, [])
+
+  useEffect(() => {
+    setFormData(prev => {
+      const hasMobile = phoneDialCodes.some(c => c.value === prev.mobileCountryCode)
+      const hasWa = phoneDialCodes.some(c => c.value === prev.whatsappCountryCode)
+      return {
+        ...prev,
+        mobileCountryCode: hasMobile ? prev.mobileCountryCode : phoneDialCodes[0].value,
+        whatsappCountryCode: hasWa ? prev.whatsappCountryCode : phoneDialCodes[0].value,
+      }
+    })
+  }, [phoneDialCodes])
 
   // Handle redirects based on user type after successful registration
   useEffect(() => {
@@ -124,15 +147,14 @@ export default function RegisterPage() {
       setFormError('Full name is required')
       return
     }
-    
-    // Only require email for adult registration
-    if (!isChild && !formData.email.trim()) {
-      setFormError('Email is required for adult registration')
-      return
-    }
-    
+
     if (!formData.mobile.trim()) {
       setFormError('Mobile number is required')
+      return
+    }
+
+    if (!formData.whatsapp.trim()) {
+      setFormError('WhatsApp number is required')
       return
     }
     
@@ -161,31 +183,37 @@ export default function RegisterPage() {
       return
     }
 
-    // Validate child-specific fields
-    if (isChild) {
-      if (!formData.fatherName.trim()) {
-        setFormError('Father\'s name is required for child registration')
-        return
-      }
-      if (!formData.dateOfBirth) {
-        setFormError('Date of birth is required for child registration')
-        return
-      }
-      if (!formData.iqamaNumber.trim()) {
-        setFormError('Iqama number is required for child registration')
-        return
-      }
+    const optionalEmail = formData.email.trim()
+    if (optionalEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(optionalEmail)) {
+      setFormError('Please enter a valid email address or leave it blank')
+      return
+    }
+
+    const mobileNumber = formData.mobile.trim().replace(/\s+/g, '')
+    const whatsappNumber = formData.whatsapp.trim().replace(/\s+/g, '')
+    if (!/^[0-9()+-]+$/.test(mobileNumber)) {
+      setFormError('Please enter a valid mobile number')
+      return
+    }
+    if (!/^[0-9()+-]+$/.test(whatsappNumber)) {
+      setFormError('Please enter a valid WhatsApp number')
+      return
+    }
+
+    if (isChild && !formData.fatherName.trim()) {
+      setFormError('Father\'s name is required for child registration')
+      return
     }
 
     // Prepare profile data for API
     const profileData = {
+      registration_type: (isChild ? 'child' : 'adult') as 'adult' | 'child',
       full_name: formData.fullName.trim(),
-      mobile: formData.mobile.trim(),
-      whatsapp_no: formData.whatsapp.trim() || null,
+      contact_email: optionalEmail || null,
+      mobile: `${formData.mobileCountryCode}${mobileNumber}`,
+      whatsapp_no: `${formData.whatsappCountryCode}${whatsappNumber}`,
       gender: formData.gender as 'male' | 'female',
       father_name: isChild ? formData.fatherName.trim() : null,
-      dob: isChild ? formData.dateOfBirth : null,
-      iqama_number: isChild ? formData.iqamaNumber.trim() : null,
       area_id: formData.area,
       center_id: formData.examCenter,
       user_type: 'user' as const
@@ -201,7 +229,6 @@ export default function RegisterPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: isChild ? '' : formData.email.trim(), // Empty email for children
           password: formData.password,
           profileData
         }),
@@ -375,70 +402,103 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Email - Only show for adult registration */}
-                {!isChild && (
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required={!isChild}
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your email address"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Mobile */}
-                <div>
-                  <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
-                    Mobile Number *
+                {/* Optional contact email (login uses serial number + password) */}
+                <div className="lg:col-span-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email address (optional)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Phone className="h-5 w-5 text-gray-400" />
+                      <Mail className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
-                      id="mobile"
-                      name="mobile"
-                      type="tel"
-                      required
-                      value={formData.mobile}
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
                       onChange={handleInputChange}
                       className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter your mobile number"
+                      placeholder="you@example.com"
                     />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    For contact only. You will sign in with your serial number and password.
+                  </p>
+                </div>
+
+                {/* Mobile */}
+                <div className="lg:col-span-2">
+                  <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                    Mobile Number *
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      id="mobileCountryCode"
+                      name="mobileCountryCode"
+                      value={formData.mobileCountryCode}
+                      onChange={handleInputChange}
+                      disabled={loadingLocations}
+                      className="min-w-[11rem] max-w-[14rem] flex-shrink-0 px-3 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60"
+                    >
+                      {phoneDialCodes.map((code) => (
+                        <option key={code.value} value={code.value}>
+                          {code.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="relative flex-1">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Phone className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="mobile"
+                        name="mobile"
+                        type="tel"
+                        required
+                        value={formData.mobile}
+                        onChange={handleInputChange}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your mobile number"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* WhatsApp */}
-                <div>
+                <div className="lg:col-span-2">
                   <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 mb-2">
-                    WhatsApp Number (Optional)
+                    WhatsApp Number *
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Phone className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="whatsapp"
-                      name="whatsapp"
-                      type="tel"
-                      value={formData.whatsapp}
+                  <div className="flex gap-2">
+                    <select
+                      id="whatsappCountryCode"
+                      name="whatsappCountryCode"
+                      value={formData.whatsappCountryCode}
                       onChange={handleInputChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter your WhatsApp number"
-                    />
+                      disabled={loadingLocations}
+                      className="min-w-[11rem] max-w-[14rem] flex-shrink-0 px-3 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60"
+                    >
+                      {phoneDialCodes.map((code) => (
+                        <option key={code.value} value={code.value}>
+                          {code.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="relative flex-1">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Phone className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="whatsapp"
+                        name="whatsapp"
+                        type="tel"
+                        required
+                        value={formData.whatsapp}
+                        onChange={handleInputChange}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your WhatsApp number"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -482,7 +542,7 @@ export default function RegisterPage() {
 
               {/* Child-specific fields */}
               {isChild && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 border-t pt-6">
+                <div className="grid grid-cols-1 gap-6 border-t pt-6">
                   <div>
                     <label htmlFor="fatherName" className="block text-sm font-medium text-gray-700 mb-2">
                       Father&apos;s Name *
@@ -496,37 +556,6 @@ export default function RegisterPage() {
                       onChange={handleInputChange}
                       className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter father&apos;s name"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
-                      Date of Birth *
-                    </label>
-                    <input
-                      id="dateOfBirth"
-                      name="dateOfBirth"
-                      type="date"
-                      required={isChild}
-                      value={formData.dateOfBirth}
-                      onChange={handleInputChange}
-                      className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div className="lg:col-span-2">
-                    <label htmlFor="iqamaNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                      Iqama Number *
-                    </label>
-                    <input
-                      id="iqamaNumber"
-                      name="iqamaNumber"
-                      type="text"
-                      required={isChild}
-                      value={formData.iqamaNumber}
-                      onChange={handleInputChange}
-                      className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter Iqama number"
                     />
                   </div>
                 </div>
@@ -662,7 +691,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                     Confirm Password *
                   </label>
                   <div className="relative">

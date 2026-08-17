@@ -47,9 +47,9 @@ interface Area {
 interface ExamCenter {
   id: string
   name: string
-  capacity: number
   is_active: boolean
   area_id: string
+  student_count: number
 }
 
 export default function HierarchyPage() {
@@ -138,7 +138,7 @@ export default function HierarchyPage() {
     let totalRegions = 0
     let totalAreas = 0
     let totalCenters = 0
-    let totalCapacity = 0
+    let totalStudents = 0
 
     hierarchy.forEach(country => {
       totalCountries++
@@ -148,13 +148,13 @@ export default function HierarchyPage() {
           totalAreas++
           area.exam_centers.forEach(center => {
             totalCenters++
-            totalCapacity += center.capacity
+            totalStudents += center.student_count ?? 0
           })
         })
       })
     })
 
-    return { totalCountries, totalRegions, totalAreas, totalCenters, totalCapacity }
+    return { totalCountries, totalRegions, totalAreas, totalCenters, totalStudents }
   }
 
   const renderCountry = (country: Country) => {
@@ -333,7 +333,9 @@ export default function HierarchyPage() {
         <Users className="w-4 h-4 text-orange-600 mr-3" />
         <div>
           <h6 className="font-medium text-gray-900">{center.name}</h6>
-          <p className="text-sm text-gray-500">Capacity: {center.capacity} seats</p>
+          <p className="text-sm text-gray-500">
+            {center.student_count ?? 0} {center.student_count === 1 ? 'student' : 'students'}
+          </p>
         </div>
       </div>
       <div className="flex items-center space-x-2">
@@ -437,8 +439,8 @@ export default function HierarchyPage() {
             <div className="flex items-center">
               <Users className="w-8 h-8 text-indigo-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Capacity</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalCapacity}</p>
+                <p className="text-sm font-medium text-gray-600">Total Students</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.totalStudents}</p>
               </div>
             </div>
           </div>

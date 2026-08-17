@@ -24,6 +24,7 @@ interface ExamCenter {
   address: string | null
   area_id: string
   capacity: number
+  student_count?: number
   contact_person: string | null
   contact_phone: string | null
   is_active: boolean
@@ -254,7 +255,7 @@ export default function ExamCentersPage() {
                 <Users className="w-8 h-8 text-orange-600 mr-3" />
                 <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Exam Centers Management</h1>
               </div>
-              <p className="text-sm sm:text-base text-gray-600">Manage exam centers and their capacity</p>
+              <p className="text-sm sm:text-base text-gray-600">Manage exam centers and view student enrollment</p>
             </div>
             <button
               onClick={() => {
@@ -330,7 +331,7 @@ export default function ExamCentersPage() {
                     Location
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Capacity
+                    Students
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact
@@ -392,7 +393,7 @@ export default function ExamCentersPage() {
                         <div className="flex items-center">
                           <Users className="w-4 h-4 text-gray-400 mr-2" />
                           <span className="text-sm font-medium text-gray-900">
-                            {center.capacity}
+                            {center.student_count ?? 0}
                           </span>
                         </div>
                       </td>
@@ -515,8 +516,8 @@ export default function ExamCentersPage() {
                         <span className="truncate">{center.areas?.name} ({center.areas?.code})</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
-                        <span className="font-medium mr-2 w-16 flex-shrink-0">Capacity:</span>
-                        <span className="truncate">{center.capacity} seats</span>
+                        <span className="font-medium mr-2 w-16 flex-shrink-0">Students:</span>
+                        <span className="truncate">{center.student_count ?? 0}</span>
                       </div>
                       {center.contact_person && (
                         <div className="flex items-center text-sm text-gray-600">

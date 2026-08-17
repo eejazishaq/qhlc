@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, CheckCircle, XCircle, FileText, Check, X } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, FileText, Check, X, RotateCcw } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -69,6 +69,10 @@ function ExamEvaluationPageClient({ params }: { params: { id: string } }) {
   const [selectedUserExam, setSelectedUserExam] = useState<UserExam | null>(null)
   const [evaluating, setEvaluating] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  const [reopenLoading, setReopenLoading] = useState(false)
+  const [showReopenModal, setShowReopenModal] = useState(false)
+  const [reopenClearAnswers, setReopenClearAnswers] = useState(false)
+  const [reopenRestartTimer, setReopenRestartTimer] = useState(true)
 
   useEffect(() => {
     setMounted(true)
@@ -155,6 +159,56 @@ function ExamEvaluationPageClient({ params }: { params: { id: string } }) {
       alert('Failed to evaluate answer. Please try again.')
     } finally {
       setEvaluating(false)
+    }
+  }
+
+  const reopenExamForStudent = async () => {
+    if (!selectedUserExam) return
+
+    try {
+      setReopenLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        throw new Error('No authentication token available')
+      }
+
+      const response = await fetch(`/api/admin/user-exams/${selectedUserExam.id}/reopen`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          exam_id: params.id,
+          clearAnswers: reopenClearAnswers,
+          restartTimer: reopenRestartTimer,
+        }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === 'string'
+            ? data.error
+            : data.details || 'Failed to reopen exam for this student'
+        )
+      }
+
+      setShowReopenModal(false)
+      setReopenClearAnswers(false)
+      setReopenRestartTimer(true)
+      setSelectedUserExam(null)
+      await fetchEvaluationData()
+      alert(
+        'Exam reopened for this student. They can open it again from My Exams (Continue Exam).'
+      )
+    } catch (error) {
+      console.error('Error reopening exam:', error)
+      alert(error instanceof Error ? error.message : 'Failed to reopen exam. Please try again.')
+    } finally {
+      setReopenLoading(false)
     }
   }
 
@@ -326,18 +380,34 @@ function ExamEvaluationPageClient({ params }: { params: { id: string } }) {
             {selectedUserExam ? (
               <div className="bg-white rounded-lg shadow">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900">
                         {selectedUserExam.user.full_name}&apos;s Answers
                       </h2>
                       <p className="text-sm text-gray-600">{selectedUserExam.user.mobile}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-gray-900">
-                        {selectedUserExam.total_score}/{exam?.total_marks}
-                      </p>
-                      <p className="text-sm text-gray-600">Total Score</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                      <div className="text-right sm:text-right">
+                        <p className="text-lg font-semibold text-gray-900">
+                          {selectedUserExam.total_score}/{exam?.total_marks}
+                        </p>
+                        <p className="text-sm text-gray-600">Total Score</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setReopenClearAnswers(false)
+                          setReopenRestartTimer(true)
+                          setShowReopenModal(true)
+                        }}
+                        className="border-amber-300 text-amber-900 hover:bg-amber-50"
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Reopen exam for student
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -445,6 +515,58 @@ function ExamEvaluationPageClient({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+
+      {showReopenModal && selectedUserExam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Reopen exam for this student?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {selectedUserExam.user.full_name} will be able to take this exam again from{' '}
+              <strong>My Exams</strong>. Their submission is removed from this list until they submit again.
+            </p>
+            <label className="flex items-start gap-2 text-sm text-gray-800 mb-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={reopenRestartTimer}
+                onChange={(e) => setReopenRestartTimer(e.target.checked)}
+                className="mt-0.5 rounded border-gray-300"
+              />
+              <span>Restart timer from now (full exam duration again)</span>
+            </label>
+            <label className="flex items-start gap-2 text-sm text-gray-800 mb-6 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={reopenClearAnswers}
+                onChange={(e) => setReopenClearAnswers(e.target.checked)}
+                className="mt-0.5 rounded border-gray-300"
+              />
+              <span>Clear all saved answers (fresh attempt; cannot be undone)</span>
+            </label>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowReopenModal(false)
+                  setReopenClearAnswers(false)
+                  setReopenRestartTimer(true)
+                }}
+                disabled={reopenLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={() => void reopenExamForStudent()}
+                disabled={reopenLoading}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                {reopenLoading ? 'Reopening…' : 'Confirm reopen'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 

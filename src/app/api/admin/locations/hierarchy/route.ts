@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { countProfilesByCenterId } from '@/lib/supabase/profileCountsByCenter'
 
 export async function GET(request: NextRequest) {
   try {
@@ -121,7 +122,7 @@ export async function GET(request: NextRequest) {
           areas!inner(
             id, name, code, is_active,
             exam_centers!inner(
-              id, name, capacity, is_active
+              id, name, is_active
             )
           )
         )
@@ -133,6 +134,22 @@ export async function GET(request: NextRequest) {
       console.error('Error fetching hierarchy:', countriesError)
       return NextResponse.json({ error: 'Failed to fetch hierarchy' }, { status: 500 })
     }
+
+    const centerIds = new Set<string>()
+    for (const country of countries || []) {
+      for (const region of country.regions || []) {
+        for (const area of region.areas || []) {
+          for (const ec of area.exam_centers || []) {
+            centerIds.add(ec.id)
+          }
+        }
+      }
+    }
+
+    const studentCountByCenter =
+      centerIds.size > 0
+        ? await countProfilesByCenterId(supabase, [...centerIds])
+        : new Map<string, number>()
 
     // Transform the data to a cleaner structure
     const hierarchy = (countries || []).map(country => ({
@@ -155,9 +172,9 @@ export async function GET(request: NextRequest) {
           exam_centers: (area.exam_centers || []).map(center => ({
             id: center.id,
             name: center.name,
-            capacity: center.capacity,
             is_active: center.is_active,
-            area_id: area.id
+            area_id: area.id,
+            student_count: studentCountByCenter.get(center.id) || 0
           }))
         }))
       }))

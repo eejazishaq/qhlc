@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { use } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
@@ -39,7 +39,7 @@ interface Question {
 interface UserExam {
   id: string
   exam_id: string
-  status: 'pending' | 'completed' | 'evaluated'
+  status: 'pending' | 'in_progress' | 'completed' | 'evaluated' | 'published'
   started_at: string
   submitted_at?: string
   total_score: number
@@ -83,7 +83,10 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
   const [fullscreenMode, setFullscreenMode] = useState(false)
   const [warningShown, setWarningShown] = useState(false)
   const [lastActivity, setLastActivity] = useState(Date.now())
-  const [autoSaveInterval, setAutoSaveInterval] = useState<NodeJS.Timeout | null>(null)
+  const lastSavedRef = useRef<Record<string, string>>({})
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [visitedQuestionIds, setVisitedQuestionIds] = useState<Record<string, boolean>>({})
+  const [savingAnswer, setSavingAnswer] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -123,21 +126,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
     }
   }, [userExam])
 
-  // Auto-save every 30 seconds
-  useEffect(() => {
-    if (userExam && Object.keys(answers).length > 0) {
-      const interval = setInterval(() => {
-        saveAllAnswers()
-      }, 30000) // 30 seconds
-
-      setAutoSaveInterval(interval)
-
-      return () => {
-        if (interval) clearInterval(interval)
-      }
-    }
-  }, [userExam, answers])
-
   // Activity tracking
   useEffect(() => {
     const handleActivity = () => {
@@ -163,22 +151,21 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
     }
   }, [timeLeft, warningShown])
 
-  const shuffleQuestions = (questions: Question[]) => {
-    if (!questions || questions.length === 0) return questions
-    
-    // Create a copy of the questions array
-    const shuffledQuestions = [...questions]
-    
-    // Fisher-Yates shuffle algorithm
-    for (let i = shuffledQuestions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+  /** Same order every time for this attempt (so resume does not reshuffle questions). */
+  const orderQuestionsForUser = (list: Question[], userExamId: string, shuffle: boolean) => {
+    if (!list.length) return list
+    const copy = [...list]
+    if (!shuffle) {
+      return copy.sort((a, b) => (a.order_number ?? 0) - (b.order_number ?? 0))
     }
-    
-    console.log('Questions shuffled on frontend. Original order:', questions.map(q => q.order_number))
-    console.log('Shuffled order:', shuffledQuestions.map(q => q.order_number))
-    
-    return shuffledQuestions
+    let seed = 0
+    for (let i = 0; i < userExamId.length; i++) seed = (Math.imul(31, seed) + userExamId.charCodeAt(i)) | 0
+    const hash = (qId: string) => {
+      let h = seed
+      for (let i = 0; i < qId.length; i++) h = (Math.imul(31, h) + qId.charCodeAt(i)) | 0
+      return h
+    }
+    return copy.sort((a, b) => hash(a.id) - hash(b.id))
   }
 
   const fetchExamData = async () => {
@@ -209,6 +196,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
         return
       }
 
+      if (['completed', 'evaluated', 'published'].includes(userExamData.status)) {
+        router.push(`/dashboard/user/exams/${userExamData.id}/results`)
+        return
+      }
+
       setUserExam(userExamData)
 
       // Fetch questions
@@ -224,19 +216,38 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
 
       const questionsData = await questionsResponse.json()
       let fetchedQuestions = questionsData.questions || []
-      
-      // Apply frontend shuffling if enabled for this exam
-      if (userExamData.exam.shuffle_questions && fetchedQuestions.length > 0) {
-        console.log('Shuffle enabled for exam:', userExamData.exam.title)
-        fetchedQuestions = shuffleQuestions(fetchedQuestions)
-      } else {
-        console.log('Shuffle disabled for exam:', userExamData.exam.title)
-      }
-      
+      fetchedQuestions = orderQuestionsForUser(
+        fetchedQuestions,
+        userExamData.id,
+        !!userExamData.exam.shuffle_questions
+      )
       setQuestions(fetchedQuestions)
 
-      // Load existing answers
-      await loadExistingAnswers()
+      // Load existing answers (skip server re-grading while exam is in progress)
+      const answersRes = await fetch(
+        `/api/user-answers?user_exam_id=${id}&skip_grading=true`,
+        {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        }
+      )
+      if (answersRes.ok) {
+        const data = await answersRes.json()
+        const existingAnswers: Record<string, string> = {}
+        ;(data.user_answers || []).forEach((answer: { question_id: string; answer_text: string | null }) => {
+          if (answer.answer_text != null && String(answer.answer_text).trim() !== '') {
+            existingAnswers[answer.question_id] = String(answer.answer_text)
+          }
+        })
+        lastSavedRef.current = { ...existingAnswers }
+        setAnswers(existingAnswers)
+      } else {
+        const errText = await answersRes.text().catch(() => '')
+        console.error(
+          'Failed to load saved answers:',
+          answersRes.status,
+          errText || answersRes.statusText
+        )
+      }
 
     } catch (error) {
       console.error('Error fetching exam data:', error)
@@ -244,35 +255,6 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
       router.push('/dashboard/user/exams')
     } finally {
       setLoadingExam(false)
-    }
-  }
-
-  const loadExistingAnswers = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        return
-      }
-
-      const response = await fetch(`/api/user-answers?user_exam_id=${id}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const existingAnswers: Record<string, string> = {}
-        
-        data.user_answers.forEach((answer: any) => {
-          existingAnswers[answer.question_id] = answer.answer_text
-        })
-        
-        setAnswers(existingAnswers)
-      }
-    } catch (error) {
-      console.error('Error loading existing answers:', error)
     }
   }
 
@@ -297,76 +279,95 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const saveAnswer = async (questionId: string, answer: string) => {
-    try {
-      setAnswers(prev => ({ ...prev, [questionId]: answer }))
-      
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.access_token) {
-        return
-      }
+  const persistToServer = async (questionId: string, rawValue: string) => {
+    const trimmed = (rawValue ?? '').trim()
+    const prev = lastSavedRef.current[questionId] ?? ''
+    if (trimmed === prev) return
 
-      await fetch('/api/user-answers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          user_exam_id: id,
-          question_id: questionId,
-          answer
-        })
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) return
+
+    const response = await fetch('/api/user-answers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        user_exam_id: id,
+        question_id: questionId,
+        answer: trimmed
       })
-    } catch (error) {
-      console.error('Error saving answer:', error)
+    })
+
+    if (!response.ok) {
+      console.error('Failed to persist answer')
+      return
+    }
+
+    if (trimmed === '') {
+      delete lastSavedRef.current[questionId]
+      setAnswers((prev) => {
+        const next = { ...prev }
+        delete next[questionId]
+        return next
+      })
+    } else {
+      lastSavedRef.current[questionId] = trimmed
+      setAnswers((prev) => ({ ...prev, [questionId]: trimmed }))
     }
   }
 
-  const saveCurrentAnswer = async () => {
-    const currentQuestion = questions[currentQuestionIndex]
-    if (!currentQuestion) return
+  const scheduleDebouncedSave = (questionId: string, value: string) => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    debounceTimerRef.current = setTimeout(() => {
+      void persistToServer(questionId, value)
+    }, 450)
+  }
 
-    const answer = answers[currentQuestion.id] || ''
-    await saveAnswer(currentQuestion.id, answer)
+  const saveCurrentIfDirty = async () => {
+    const q = questions[currentQuestionIndex]
+    if (!q) return
+    const current = (answers[q.id] ?? '').trim()
+    const last = (lastSavedRef.current[q.id] ?? '').trim()
+    if (current === last) return
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    await persistToServer(q.id, answers[q.id] ?? '')
   }
 
   const goToNextQuestion = async () => {
-    // Save current answer before moving to next question
-    await saveCurrentAnswer()
-    
+    await saveCurrentIfDirty()
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1)
     }
   }
 
   const goToPreviousQuestion = async () => {
-    // Save current answer before moving to previous question
-    await saveCurrentAnswer()
-    
+    await saveCurrentIfDirty()
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1)
     }
   }
 
   const goToQuestion = async (index: number) => {
-    // Save current answer before moving to another question
-    await saveCurrentAnswer()
+    await saveCurrentIfDirty()
     setCurrentQuestionIndex(index)
   }
 
-  // Auto-save all answers
-  const saveAllAnswers = async () => {
-    try {
-      const promises = Object.entries(answers).map(([questionId, answer]) => 
-        saveAnswer(questionId, answer)
-      )
-      
-      await Promise.all(promises)
-      console.log('Auto-saved all answers')
-    } catch (error) {
-      console.error('Error auto-saving answers:', error)
+  const saveAllDirtyAnswers = async () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    for (const q of questions) {
+      const current = (answers[q.id] ?? '').trim()
+      const last = (lastSavedRef.current[q.id] ?? '').trim()
+      if (current !== last) {
+        await persistToServer(q.id, answers[q.id] ?? '')
+      }
     }
   }
 
@@ -379,8 +380,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
     try {
       setSaving(true)
       
-      // First, save all pending answers
-      await saveAllAnswers()
+      await saveAllDirtyAnswers()
       
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -422,23 +422,32 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
+  const hasAnswerFor = (questionId: string) => {
+    return (answers[questionId] ?? '').trim().length > 0
+  }
+
   const getAnsweredQuestions = () => {
-    return Object.keys(answers).length
+    return questions.filter((q) => hasAnswerFor(q.id)).length
   }
 
   const getProgressPercentage = () => {
     return questions.length > 0 ? (getAnsweredQuestions() / questions.length) * 100 : 0
   }
 
+  useEffect(() => {
+    const q = questions[currentQuestionIndex]
+    if (!q) return
+    setVisitedQuestionIds((prev) => (prev[q.id] ? prev : { ...prev, [q.id]: true }))
+  }, [currentQuestionIndex, questions])
+
   const handleExit = () => {
     setShowExitConfirm(true)
   }
 
   const confirmExit = async () => {
-    // Save all answers before exiting
-    await saveAllAnswers()
-    // Update to completed status when exiting
-    await updateExamStatus('completed')
+    await saveAllDirtyAnswers()
+    await updateExamStatus('pending')
+    setShowExitConfirm(false)
     router.push('/dashboard/user/exams')
   }
 
@@ -451,6 +460,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
       setFullscreenMode(false)
     }
   }
+
+  const name = profile?.full_name?.trim()
+  const serial = profile?.serial_number?.trim()
+  const studentDisplayName =
+    name && serial ? `${name} (${serial})` : name || serial || ''
 
   if (loading || !mounted) {
     return (
@@ -509,10 +523,10 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
                 <h4 className="font-semibold text-blue-900 mb-2">📋 Important Instructions:</h4>
                 <ul className="space-y-1 sm:space-y-2 text-blue-800 text-xs sm:text-sm">
-                  <li>• You can navigate between questions freely - your answers are saved automatically</li>
+                  <li>• You can navigate between questions freely — choices save when you pick them; text saves after you pause typing or when you leave the question</li>
                   <li>• You can change your answers at any time during the exam</li>
                   <li>• Text questions require manual evaluation by instructors</li>
-                  <li>• Your answers are auto-saved every 30 seconds</li>
+                  <li>• Answers save when you change them (text fields debounce briefly)</li>
                   <li>• The exam will auto-submit when time expires</li>
                   <li>• Do not refresh the page or close the browser during the exam</li>
                 </ul>
@@ -532,7 +546,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                   <p><strong>Total Marks:</strong> {userExam.exam.total_marks}</p>
                 </div>
                 <div>
-                  <p><strong>Student:</strong> {profile?.full_name}</p>
+                  <p><strong>Student:</strong> {studentDisplayName || '—'}</p>
                   <p><strong>Started:</strong> {new Date(userExam.started_at).toLocaleString()}</p>
                 </div>
               </div>
@@ -591,9 +605,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Student Info - Desktop */}
-              <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
-                <User className="w-4 h-4" />
-                <span>{profile?.full_name}</span>
+              <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600 min-w-0 max-w-[14rem] lg:max-w-xs">
+                <User className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate" title={studentDisplayName}>
+                  {studentDisplayName || '—'}
+                </span>
               </div>
 
               {/* Progress - Desktop */}
@@ -663,22 +679,36 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
             <div className="bg-white rounded-lg shadow p-3 sm:p-4 lg:sticky lg:top-24">
               <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Question Navigation</h3>
               <div className="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-1 sm:gap-2">
-                {questions.map((question, index) => (
+                {questions.map((question, index) => {
+                  const answered = hasAnswerFor(question.id)
+                  const visited = !!visitedQuestionIds[question.id]
+                  const isCurrent = index === currentQuestionIndex
+                  let palette =
+                    'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                  if (isCurrent) {
+                    palette = 'bg-blue-600 text-white border-blue-600'
+                  } else if (answered) {
+                    palette = 'bg-green-100 text-green-800 border-green-300'
+                  } else if (visited) {
+                    palette = 'bg-amber-100 text-amber-900 border-amber-300'
+                  }
+                  const title = answered
+                    ? `Question ${index + 1} (answered)`
+                    : visited
+                      ? `Question ${index + 1} (skipped)`
+                      : `Question ${index + 1} (not visited)`
+                  return (
                   <button
                     key={question.id}
+                    type="button"
                     onClick={() => goToQuestion(index)}
-                    className={`p-1 sm:p-2 text-xs font-medium rounded border transition-colors ${
-                      index === currentQuestionIndex
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : answers[question.id]
-                        ? 'bg-green-100 text-green-800 border-green-300'
-                        : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
-                    }`}
-                    title={`Question ${index + 1}${answers[question.id] ? ' (Answered)' : ' (Not answered)'}`}
+                    className={`p-1 sm:p-2 text-xs font-medium rounded border transition-colors ${palette}`}
+                    title={title}
                   >
                     {index + 1}
                   </button>
-                ))}
+                  )
+                })}
               </div>
               
               <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 space-y-1 sm:space-y-2">
@@ -745,7 +775,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                             name={`question-${currentQuestion.id}`}
                             value={option}
                             checked={answers[currentQuestion.id] === option}
-                            onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestion.id]: e.target.value }))}
+                            onChange={(e) => {
+                              const v = e.target.value
+                              setAnswers((prev) => ({ ...prev, [currentQuestion.id]: v }))
+                              void persistToServer(currentQuestion.id, v)
+                            }}
                             className="sr-only"
                           />
                           <div className={`w-4 h-4 border-2 rounded-full mr-3 flex items-center justify-center flex-shrink-0 ${
@@ -779,7 +813,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                             name={`question-${currentQuestion.id}`}
                             value={option}
                             checked={answers[currentQuestion.id] === option}
-                            onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestion.id]: e.target.value }))}
+                            onChange={(e) => {
+                              const v = e.target.value
+                              setAnswers((prev) => ({ ...prev, [currentQuestion.id]: v }))
+                              void persistToServer(currentQuestion.id, v)
+                            }}
                             className="sr-only"
                           />
                           <div className={`w-4 h-4 border-2 rounded-full mr-3 flex items-center justify-center flex-shrink-0 ${
@@ -801,7 +839,11 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                     <div>
                       <textarea
                         value={answers[currentQuestion.id] || ''}
-                        onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestion.id]: e.target.value }))}
+                        onChange={(e) => {
+                          const v = e.target.value
+                          setAnswers((prev) => ({ ...prev, [currentQuestion.id]: v }))
+                          scheduleDebouncedSave(currentQuestion.id, v)
+                        }}
                         placeholder="Type your answer here..."
                         rows={6}
                         className="w-full p-3 sm:p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm sm:text-base"
@@ -817,15 +859,28 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
                 <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
                     <div className="text-xs sm:text-sm text-gray-600">
-                      <span>Your answer will be saved automatically when you navigate between questions</span>
+                      <span>
+                        MCQ and true/false save when you pick an option; text saves after you pause typing. Unsaved text is flushed when you move to another question or exit.
+                      </span>
                     </div>
                     
                     <Button
-                      onClick={() => saveCurrentAnswer()}
-                      disabled={saving || !answers[currentQuestion.id]}
+                      onClick={async () => {
+                        setSavingAnswer(true)
+                        try {
+                          await saveCurrentIfDirty()
+                        } finally {
+                          setSavingAnswer(false)
+                        }
+                      }}
+                      disabled={
+                        savingAnswer ||
+                        (answers[currentQuestion.id] ?? '').trim() ===
+                          (lastSavedRef.current[currentQuestion.id] ?? '').trim()
+                      }
                       className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
                     >
-                      {saving ? (
+                      {savingAnswer ? (
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-1 sm:mr-2"></div>
                           <span className="text-xs sm:text-sm">Saving...</span>
@@ -923,7 +978,7 @@ export default function ExamTakingPage({ params }: { params: Promise<{ id: strin
               <h3 className="text-base sm:text-lg font-semibold">Exit Exam</h3>
             </div>
             <p className="text-gray-600 mb-6 text-sm sm:text-base">
-              Are you sure you want to exit the exam? Your progress will be saved, but the exam will be marked as abandoned.
+              Your answers will be saved. You can continue later from the exams page (exam stays in progress).
             </p>
             <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <Button

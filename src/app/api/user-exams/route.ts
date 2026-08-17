@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/route-client'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient()
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
@@ -98,18 +95,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log('=== Starting exam POST request ===')
-    const supabase = createClient()
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
@@ -165,16 +159,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Exam is not available at this time' }, { status: 400 })
     }
 
-    // Check if user already has an active attempt
-    const { data: existingAttempt, error: existingError } = await supabase
+    // Fetch attempts for this user+exam, then pick active ones in code. Do not use
+    // .in('status', ['pending','in_progress']) in SQL: many DBs only have enum values
+    // pending|completed|evaluated|published and omit 'in_progress', which makes PostgREST error.
+    const { data: attemptsForExam, error: existingError } = await supabase
       .from('user_exams')
       .select('*')
       .eq('user_id', user.id)
       .eq('exam_id', exam_id)
-      .in('status', ['pending'])
-      .single()
 
-    console.log('Existing attempt check:', { existingAttempt, error: existingError })
+    const activeStatuses = new Set(['pending', 'in_progress'])
+    const existingAttempt =
+      (attemptsForExam ?? [])
+        .filter((row) => activeStatuses.has(String(row.status)))
+        .sort(
+          (a, b) =>
+            new Date(a.started_at ?? 0).getTime() - new Date(b.started_at ?? 0).getTime()
+        )[0] ?? null
+
+    console.log('Existing attempt check:', {
+      existingAttempt,
+      existingError,
+      attemptCount: attemptsForExam?.length
+    })
+
+    if (existingError) {
+      console.error('Error looking up existing attempt:', existingError)
+      return NextResponse.json({ error: 'Failed to check existing exam attempt' }, { status: 500 })
+    }
 
     if (existingAttempt) {
       // Return existing attempt

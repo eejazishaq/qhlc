@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/route-client'
 
 export async function POST(
   request: NextRequest,
@@ -7,18 +7,15 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const supabase = createClient()
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }

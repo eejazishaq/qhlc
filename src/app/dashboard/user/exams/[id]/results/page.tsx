@@ -281,7 +281,7 @@ export default function ExamResultsPage({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
               
-              {userExam.status === 'evaluated' && (
+              {(userExam.status === 'evaluated' || userExam.status === 'published') && (
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900">
                     {Math.round(percentage)}%
@@ -365,7 +365,7 @@ export default function ExamResultsPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Pass/Fail Status */}
-        {userExam.status === 'evaluated' && (
+        {(userExam.status === 'evaluated' || userExam.status === 'published') && (
           <div className="bg-white rounded-lg shadow mb-8">
             <div className="p-6">
               <div className="flex items-center justify-center">

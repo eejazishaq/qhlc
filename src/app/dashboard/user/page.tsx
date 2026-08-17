@@ -338,7 +338,22 @@ export default function UserDashboard() {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
+          <Link href="/dashboard/user/exams" className="block">
+            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-center">
+                <div className="bg-indigo-100 p-2 sm:p-3 rounded-full flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
+                </div>
+                <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Take Exam</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">Start</p>
+                  <p className="text-xs text-gray-500">Go to exam page</p>
+                </div>
+              </div>
+            </div>
+          </Link>
+
           <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center">
               <div className="bg-blue-100 p-2 sm:p-3 rounded-full flex items-center justify-center">

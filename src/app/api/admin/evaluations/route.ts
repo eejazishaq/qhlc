@@ -1,30 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/route-client'
+
+function unwrapQuestion(question: unknown) {
+  if (!question) return null
+  return Array.isArray(question) ? question[0] : question
+}
+
+function normalizeAnswerText(s: string | null | undefined) {
+  return (s ?? '').trim()
+}
+
+/** Compare student answer to key; true/false is case-insensitive. */
+function autoScoreMatches(
+  answerText: string | null | undefined,
+  correctAnswer: string | null | undefined,
+  questionType: string
+): boolean {
+  const a = normalizeAnswerText(answerText)
+  const b = normalizeAnswerText(correctAnswer)
+  if (questionType === 'truefalse') {
+    return a.toLowerCase() === b.toLowerCase()
+  }
+  return a === b
+}
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('===Admin Evaluations API Called===')
-    const supabase = createClient()
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('No auth header found')
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      console.log('Auth error:', authError)
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
 
-    console.log('User authenticated:', user.id)
-
-    // Get user profile to check admin role
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
@@ -32,18 +46,13 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (profileError || !profile) {
-      console.log('Profile error:', profileError)
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    console.log('User profile:', { user_type: profile.user_type })
-
     if (!['admin', 'super_admin'].includes(profile.user_type)) {
-      console.log('Unauthorized access attempt')
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 })
     }
 
-    // Get all user exams with user and exam details
     const { data: userExams, error: userExamsError } = await supabase
       .from('user_exams')
       .select(`
@@ -63,7 +72,7 @@ export async function GET(request: NextRequest) {
           passing_marks
         )
       `)
-      .in('status', ['completed', 'evaluated', 'pending'])
+      .in('status', ['completed', 'evaluated', 'published'])
       .not('submitted_at', 'is', null)
       .order('submitted_at', { ascending: false })
 
@@ -72,12 +81,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch submissions' }, { status: 500 })
     }
 
-    console.log('===Admin Evaluations Debug===', {
-      userExams: userExams,
-      count: userExams?.length || 0
-    })
-
-    // Get answers for each user exam
     const submissionsWithAnswers = await Promise.all(
       (userExams || []).map(async (userExam) => {
         const { data: answers, error: answersError } = await supabase
@@ -101,60 +104,110 @@ export async function GET(request: NextRequest) {
 
         if (answersError) {
           console.error('Error fetching answers:', answersError)
-          return userExam
+          return { ...userExam, answers: [] }
         }
 
-        console.log('===Answers for User Exam===', {
-          user_exam_id: userExam.id,
-          answers_count: answers?.length || 0,
-          answers: answers?.map(a => ({
-            question_type: (a.question as any)?.type,
-            is_correct: a.is_correct,
-            needs_evaluation: (a.question as any)?.type === 'text' && a.is_correct === null
-          }))
-        })
+        const list = answers ?? []
 
-        const processedAnswers = (answers || []).map(answer => {
-          const question = answer.question as any
+        const processedAnswers = list.map((answer) => {
+          const question = unwrapQuestion(answer.question) as {
+            type?: string
+            marks?: number
+            question_text?: string
+            correct_answer?: string
+            options?: string[]
+          } | null
+
+          let isCorrect = answer.is_correct
+          let scoreAwarded = Number(answer.score_awarded) || 0
+
+          if (
+            question &&
+            (question.type === 'mcq' || question.type === 'truefalse')
+          ) {
+            const match = autoScoreMatches(
+              answer.answer_text,
+              question.correct_answer,
+              question.type
+            )
+            isCorrect = match
+            scoreAwarded = match ? Number(question.marks) || 0 : 0
+          }
+
           return {
             id: answer.id,
             question_id: answer.question_id,
             question_text: question?.question_text || '',
             question_type: question?.type || '',
             answer_text: answer.answer_text,
-            is_correct: answer.is_correct,
-            score_awarded: answer.score_awarded || 0,
+            is_correct: isCorrect,
+            score_awarded: scoreAwarded,
             max_score: question?.marks || 0,
-            needs_evaluation: question?.type === 'text' && answer.is_correct === null,
+            needs_evaluation:
+              question?.type === 'text' && answer.is_correct === null,
             correct_answer: question?.correct_answer || '',
-            options: question?.options || []
+            options: question?.options || [],
           }
         })
 
+        const newTotal = processedAnswers.reduce(
+          (sum, a) => sum + (Number(a.score_awarded) || 0),
+          0
+        )
+
+        const updatePromises: Promise<unknown>[] = []
+
+        for (let i = 0; i < list.length; i++) {
+          const raw = list[i]
+          const proc = processedAnswers[i]
+          const q = unwrapQuestion(raw.question) as { type?: string } | null
+          if (!q || (q.type !== 'mcq' && q.type !== 'truefalse')) continue
+
+          const prevCorrect = raw.is_correct
+          const prevScore = Number(raw.score_awarded) || 0
+          if (
+            prevCorrect !== proc.is_correct ||
+            prevScore !== proc.score_awarded
+          ) {
+            updatePromises.push(
+              supabase
+                .from('user_answers')
+                .update({
+                  is_correct: proc.is_correct,
+                  score_awarded: proc.score_awarded,
+                })
+                .eq('id', raw.id)
+            )
+          }
+        }
+
+        const prevExamTotal = Number(userExam.total_score) || 0
+        if (newTotal !== prevExamTotal) {
+          updatePromises.push(
+            supabase
+              .from('user_exams')
+              .update({ total_score: newTotal })
+              .eq('id', userExam.id)
+          )
+        }
+
+        if (updatePromises.length > 0) {
+          await Promise.all(updatePromises)
+        }
+
         return {
           ...userExam,
-          answers: processedAnswers
+          total_score: newTotal,
+          answers: processedAnswers,
         }
       })
     )
 
-    console.log('===Admin Evaluations Final Response===', {
-      submissionsCount: submissionsWithAnswers.length,
-      submissions: submissionsWithAnswers.map(s => ({
-        id: s.id,
-        user_name: (s.user as any)?.full_name,
-        exam_title: (s.exam as any)?.title,
-        status: s.status,
-        answers_count: (s as any).answers?.length || 0
-      }))
+    return NextResponse.json({
+      submissions: submissionsWithAnswers,
     })
-
-    return NextResponse.json({ 
-      submissions: submissionsWithAnswers 
-    })
-
   } catch (error) {
     console.error('Error in GET /api/admin/evaluations:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-} 
+}

@@ -1,20 +1,58 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Mail, ArrowLeft, Hash, Phone } from 'lucide-react'
 import { Logo } from '@/components/Logo'
+
+type PhoneDialOption = { value: string; label: string }
+
+const PHONE_DIAL_FALLBACK: PhoneDialOption[] = [{ value: '+966', label: '+966 (SA)' }]
 
 export default function ForgotPasswordPage() {
   const [resetMethod, setResetMethod] = useState<'email' | 'serial'>('email')
   const [email, setEmail] = useState('')
   const [serialNumber, setSerialNumber] = useState('')
+  const [mobileCountryCode, setMobileCountryCode] = useState('+966')
   const [mobile, setMobile] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null)
+  const [whatsappSent, setWhatsappSent] = useState(false)
+  const [phoneDialCodes, setPhoneDialCodes] = useState<PhoneDialOption[]>(PHONE_DIAL_FALLBACK)
+  const [loadingDialCodes, setLoadingDialCodes] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        setLoadingDialCodes(true)
+        const res = await fetch('/api/locations?public=true')
+        const data = await res.json()
+        if (cancelled || !res.ok) return
+        const dial =
+          Array.isArray(data.phoneDialCodes) && data.phoneDialCodes.length > 0
+            ? data.phoneDialCodes
+            : PHONE_DIAL_FALLBACK
+        setPhoneDialCodes(dial)
+      } catch {
+        if (!cancelled) setPhoneDialCodes(PHONE_DIAL_FALLBACK)
+      } finally {
+        if (!cancelled) setLoadingDialCodes(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    setMobileCountryCode((prev) =>
+      phoneDialCodes.some((c) => c.value === prev) ? prev : phoneDialCodes[0].value
+    )
+  }, [phoneDialCodes])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,12 +88,13 @@ export default function ForgotPasswordPage() {
         }
       } else {
         // Serial number reset
+        const normalizedMobile = mobile.trim().replace(/\s+/g, '')
         response = await fetch('/api/auth/forgot-password-serial', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ serialNumber, mobile }),
+          body: JSON.stringify({ serialNumber, mobile: `${mobileCountryCode}${normalizedMobile}` }),
         })
 
         result = await response.json()
@@ -69,6 +108,7 @@ export default function ForgotPasswordPage() {
         if (result.success) {
           setSuccess(true)
           setSuccessMessage(result.message || 'Your password has been reset successfully. You can now login with your new password.')
+          setWhatsappSent(Boolean(result.whatsappSent))
           if (result.temporaryPassword) {
             setTemporaryPassword(result.temporaryPassword)
           }
@@ -89,7 +129,9 @@ export default function ForgotPasswordPage() {
     setError(null)
     setEmail('')
     setSerialNumber('')
+    setMobileCountryCode(phoneDialCodes[0]?.value ?? '+966')
     setMobile('')
+    setWhatsappSent(false)
   }
 
   return (
@@ -133,9 +175,14 @@ export default function ForgotPasswordPage() {
                 : 'Your password has been reset. Please use the temporary password below to login.'}
             </p>
             
+            {resetMethod === 'serial' && whatsappSent && (
+              <p className="text-sm text-green-700 mb-4 font-medium">
+                We also sent this 8-digit code to your WhatsApp number on file.
+              </p>
+            )}
             {resetMethod === 'serial' && temporaryPassword && (
               <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm font-semibold text-yellow-800 mb-2">Your Temporary Password:</p>
+                <p className="text-sm font-semibold text-yellow-800 mb-2">Your temporary password (8 digits):</p>
                 <div className="flex items-center justify-between bg-white p-3 rounded border border-yellow-300">
                   <code className="text-lg font-mono font-bold text-gray-900">{temporaryPassword}</code>
                   <button
@@ -202,33 +249,12 @@ export default function ForgotPasswordPage() {
                   >
                     <div className="flex items-center justify-center space-x-2">
                       <Hash className={`h-4 w-4 ${resetMethod === 'serial' ? 'text-blue-600' : 'text-gray-500'}`} />
-                      <span className="whitespace-nowrap">Serial Number</span>
+                      <span className="whitespace-nowrap">Registration Number</span>
                     </div>
                   </button>
                 </div>
               </div>
             </div>
-
-            {/* Info Message for Serial Number */}
-            {resetMethod === 'serial' && (
-              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Hash className="w-3 h-3 text-blue-600" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-blue-800 font-medium">
-                      For Children / Users without Email
-                    </p>
-                    <p className="text-xs text-blue-700 mt-1">
-                      Enter your registration number and mobile number to reset your password.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {resetMethod === 'email' ? (
@@ -280,20 +306,36 @@ export default function ForgotPasswordPage() {
                     <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
                       Mobile Number
                     </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Phone className="h-5 w-5 text-gray-400" />
+                    <div className="flex gap-2">
+                      <select
+                        id="mobileCountryCode"
+                        name="mobileCountryCode"
+                        value={mobileCountryCode}
+                        onChange={(e) => setMobileCountryCode(e.target.value)}
+                        disabled={loadingDialCodes}
+                        className="min-w-[11rem] max-w-[14rem] flex-shrink-0 px-3 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60"
+                      >
+                        {phoneDialCodes.map((code) => (
+                          <option key={code.value} value={code.value}>
+                            {code.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="relative flex-1">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Phone className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          id="mobile"
+                          name="mobile"
+                          type="tel"
+                          required
+                          value={mobile}
+                          onChange={(e) => setMobile(e.target.value)}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter your mobile number"
+                        />
                       </div>
-                      <input
-                        id="mobile"
-                        name="mobile"
-                        type="tel"
-                        required
-                        value={mobile}
-                        onChange={(e) => setMobile(e.target.value)}
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your mobile number"
-                      />
                     </div>
                     <p className="mt-1 text-xs text-gray-500">
                       We'll verify your mobile number matches your registration to reset your password.

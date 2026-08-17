@@ -7,13 +7,17 @@ export async function GET(request: NextRequest) {
     const isPublic = (searchParams.get('public') || '').toLowerCase() === 'true'
 
     if (isPublic) {
-      // Public mode: return active areas and centers without auth
+      // Same as /api/books, /api/resources, /api/classes: anon key, no JWT (public read via RLS / grants)
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
 
-      const [{ data: areas, error: areasError }, { data: centers, error: centersError }] = await Promise.all([
+      const [
+        { data: areas, error: areasError },
+        { data: centers, error: centersError },
+        { data: countries, error: countriesError },
+      ] = await Promise.all([
         supabase
           .from('areas')
           .select('id, name')
@@ -23,7 +27,12 @@ export async function GET(request: NextRequest) {
           .from('exam_centers')
           .select('id, name, area_id')
           .eq('is_active', true)
-          .order('name')
+          .order('name'),
+        supabase
+          .from('countries')
+          .select('name, code, phone_code')
+          .eq('is_active', true)
+          .order('name'),
       ])
 
       if (areasError) {
@@ -34,8 +43,34 @@ export async function GET(request: NextRequest) {
         console.error('Error fetching centers (public):', centersError)
         return NextResponse.json({ error: 'Failed to fetch centers' }, { status: 500 })
       }
+      if (countriesError) {
+        console.error('Error fetching countries (public):', countriesError)
+        console.error(
+          'Hint: run scripts/grant-public-locations-anon.sql in Supabase (same access pattern as public books/resources).'
+        )
+      }
 
-      return NextResponse.json({ areas: areas || [], centers: centers || [] })
+      const seen = new Set<string>()
+      const phoneDialCodes: { value: string; label: string }[] = []
+      for (const c of countries || []) {
+        const raw = c.phone_code?.trim()
+        if (!raw) continue
+        const digits = raw.replace(/\D/g, '')
+        if (!digits) continue
+        const value = `+${digits}`
+        if (seen.has(value)) continue
+        seen.add(value)
+        phoneDialCodes.push({
+          value,
+          label: `${value} (${String(c.code).toUpperCase()})`,
+        })
+      }
+
+      return NextResponse.json({
+        areas: areas || [],
+        centers: centers || [],
+        phoneDialCodes,
+      })
     }
 
     // Existing admin-protected behavior

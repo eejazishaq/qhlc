@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendPasswordResetWhatsApp } from '@/lib/notifications/whatsappPasswordReset'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Find the profile by serial number
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, serial_number, mobile, email, full_name')
+      .select('id, serial_number, mobile, email, full_name, whatsapp_no')
       .eq('serial_number', normalizedSerial)
       .single()
 
@@ -66,20 +67,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate a temporary random password
-    // In a production system, you might want to send this via SMS or require admin approval
-    // For now, we'll generate a secure random password
-    const generateRandomPassword = () => {
-      const length = 12
-      const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
-      let password = ''
-      for (let i = 0; i < length; i++) {
-        password += charset.charAt(Math.floor(Math.random() * charset.length))
-      }
-      return password
+    // Simple 8-digit numeric temporary password (e.g. 42343243)
+    const generateEightDigitPassword = () => {
+      const buf = new Uint32Array(1)
+      crypto.getRandomValues(buf)
+      const n = 10_000_000 + (buf[0] % 90_000_000)
+      return String(n)
     }
 
-    const newPassword = generateRandomPassword()
+    const newPassword = generateEightDigitPassword()
 
     // Update the user's password using admin API
     // First, we need to find the auth user by email
@@ -120,20 +116,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // In a production system, you would send the new password via SMS to the mobile number
-    // For now, we'll return it in the response (this is not ideal for production)
-    // TODO: Integrate with SMS service to send password to mobile number
-    
     console.log(`Password reset for user: ${profile.full_name} (${normalizedSerial})`)
-    
-    // For security, we should send this via SMS, but for now return it
-    // In production, remove the password from response and send via SMS
+
+    const waPhone = profile.whatsapp_no?.trim() || normalizedMobile
+    const waResult = await sendPasswordResetWhatsApp({
+      phone: waPhone,
+      password: newPassword,
+      fullName: profile.full_name,
+    })
+
+    if (!waResult.ok && !waResult.skipped) {
+      console.error('[forgot-password-serial] WhatsApp send failed:', waResult.error)
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Your password has been reset. Your new password is: ${newPassword}. Please login and change it immediately.`,
-      // TODO: Remove password from response once SMS integration is added
+      message: waResult.ok
+        ? 'Your password has been reset. We sent the 8-digit code to your WhatsApp. You can also copy it below.'
+        : 'Your password has been reset. Use the 8-digit code below to sign in, then change your password.',
       temporaryPassword: newPassword,
-      note: 'Please save this password and change it after logging in.'
+      note: 'Please save this password and change it after logging in.',
+      whatsappSent: waResult.ok,
     })
   } catch (error) {
     console.error('Serial password reset error:', error)

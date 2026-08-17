@@ -3,19 +3,51 @@ import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, profileData } = await request.json()
-    
-    console.log('Registration request received:', { email, profileData })
-    
-    // For children, email might be empty
-    const isChild = !email || email.trim() === ''
-    const userEmail = isChild ? '' : email.trim().toLowerCase()
-    
+    const { password, profileData } = await request.json()
+
+    console.log('Registration request received:', { profileData })
+
     if (!password) {
       return NextResponse.json(
         { error: 'Password is required' },
         { status: 400 }
       )
+    }
+
+    const registrationType = profileData?.registration_type
+    if (registrationType !== 'adult' && registrationType !== 'child') {
+      return NextResponse.json(
+        { error: 'Invalid or missing registration type' },
+        { status: 400 }
+      )
+    }
+
+    const whatsappNo = typeof profileData?.whatsapp_no === 'string' ? profileData.whatsapp_no.trim() : ''
+    if (!whatsappNo) {
+      return NextResponse.json(
+        { error: 'WhatsApp number is required' },
+        { status: 400 }
+      )
+    }
+
+    if (registrationType === 'child') {
+      const father = typeof profileData?.father_name === 'string' ? profileData.father_name.trim() : ''
+      if (!father) {
+        return NextResponse.json(
+          { error: 'Father\'s name is required for child registration' },
+          { status: 400 }
+        )
+      }
+    }
+
+    const rawContactEmail =
+      typeof profileData?.contact_email === 'string' ? profileData.contact_email.trim() : ''
+    let contactEmail: string | null = null
+    if (rawContactEmail) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawContactEmail)) {
+        return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
+      }
+      contactEmail = rawContactEmail.toLowerCase()
     }
 
     // Create Supabase client with service role key to use admin functions
@@ -26,9 +58,8 @@ export async function POST(request: NextRequest) {
 
     console.log('Supabase admin client created')
 
-    // Create the auth user first
-    // Use a unique placeholder email for children; adults use their real email
-    const placeholderEmail = isChild ? `child+${Math.random().toString(36).slice(2, 10)}@qhlc.com` : userEmail
+    // Create the auth user first; Supabase requires an email — replace with serial-based email after insert
+    const placeholderEmail = `reg+${Math.random().toString(36).slice(2, 12)}@qhlc.com`
 
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: placeholderEmail,
@@ -36,7 +67,8 @@ export async function POST(request: NextRequest) {
       email_confirm: true,
       user_metadata: {
         full_name: profileData.full_name,
-        mobile: profileData.mobile
+        mobile: profileData.mobile,
+        ...(contactEmail ? { contact_email: contactEmail } : {})
       }
     })
 
@@ -63,15 +95,17 @@ export async function POST(request: NextRequest) {
       id: authData.user.id,
       full_name: profileData.full_name,
       mobile: profileData.mobile || null,
-      whatsapp_no: profileData.whatsapp_no || null,
+      whatsapp_no: whatsappNo,
       gender: profileData.gender || 'male',
-      father_name: profileData.father_name || null,
-      dob: profileData.dob || null,
-      iqama_number: profileData.iqama_number || null,
+      father_name: registrationType === 'child' ? (profileData.father_name || '').trim() : null,
+      dob: null,
+      iqama_number: null,
+      registration_type: registrationType,
+      contact_email: contactEmail,
       area_id: profileData.area_id,
       center_id: profileData.center_id,
       user_type: profileData.user_type || 'user',
-      // email will be set AFTER we know serial_number
+      // profiles.email will be set to serial-based login AFTER we know serial_number
       is_active: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -115,8 +149,8 @@ export async function POST(request: NextRequest) {
     // Normalize serial to numeric-only (strip any QHLC- prefix)
     const normalizedSerial = rawSerial.replace(/^QHLC-/, '')
     const serialEmail = `${normalizedSerial}@qhlc.com`
-    const finalEmail = isChild ? serialEmail : userEmail
-    console.log(`Finalized serial/email -> serial: ${normalizedSerial}, email: ${finalEmail} (isChild=${isChild})`)
+    const finalEmail = serialEmail
+    console.log(`Finalized serial/email -> serial: ${normalizedSerial}, email: ${finalEmail} (registration_type=${registrationType})`)
 
     // Update profile with the finalized email and serial
     const { error: profileUpdateError } = await supabase
@@ -132,19 +166,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // If child, also update auth user's email to the serial-based email so login uses it
-    if (isChild) {
-      const { error: authEmailUpdateError } = await supabase.auth.admin.updateUserById(authData.user.id, {
-        email: serialEmail,
-        email_confirm: true
-      })
-      if (authEmailUpdateError) {
-        console.error('Failed to update auth user email:', authEmailUpdateError)
-        return NextResponse.json(
-          { error: 'Failed to update auth email: ' + authEmailUpdateError.message },
-          { status: 500 }
-        )
-      }
+    const { error: authEmailUpdateError } = await supabase.auth.admin.updateUserById(authData.user.id, {
+      email: serialEmail,
+      email_confirm: true
+    })
+    if (authEmailUpdateError) {
+      console.error('Failed to update auth user email:', authEmailUpdateError)
+      return NextResponse.json(
+        { error: 'Failed to update auth email: ' + authEmailUpdateError.message },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({

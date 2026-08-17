@@ -85,7 +85,7 @@ export default function PublicContactPage() {
           </div>
 
           {/* Locations & Hours */}
-          <div className="mt-10 md:mt-16 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+          {/* <div className="mt-10 md:mt-16 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             <div className="bg-white rounded-2xl shadow p-6 md:p-8 lg:col-span-2">
               <h3 className="text-lg md:text-xl font-semibold text-gray-900 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-600" /> Our Center
@@ -97,7 +97,7 @@ export default function PublicContactPage() {
               </div>
               <div className="mt-5">
                 <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  
                   <img
                     src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?q=80&w=1600&auto=format&fit=crop"
                     alt="QHLC Center Map"
@@ -147,7 +147,12 @@ export default function PublicContactPage() {
                 <a href="#" className="block w-full text-center py-2 rounded-lg border hover:bg-gray-50">Twitter</a>
               </div>
             </div>
-          </div>
+
+
+            
+          </div> */}
+
+
         </div>
       </section>
     </div>

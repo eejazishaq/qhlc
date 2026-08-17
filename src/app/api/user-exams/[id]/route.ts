@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/route-client'
 
 export async function GET(
   request: NextRequest,
@@ -7,8 +7,6 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = createClient()
-    
     // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -16,9 +14,10 @@ export async function GET(
     }
 
     const token = authHeader.substring(7)
-    
+    const supabase = createSupabaseRouteHandlerClient(token)
+
     // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
@@ -80,18 +79,15 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = createClient()
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
@@ -99,14 +95,15 @@ export async function PUT(
     const body = await request.json()
     const { status, submitted_at, total_score } = body
 
+    const payload: Record<string, unknown> = {}
+    if (status !== undefined) payload.status = status
+    if (submitted_at !== undefined) payload.submitted_at = submitted_at
+    if (total_score !== undefined) payload.total_score = total_score
+
     // Update the user exam
     const { data: userExam, error } = await supabase
       .from('user_exams')
-      .update({
-        status,
-        submitted_at,
-        total_score
-      })
+      .update(payload)
       .eq('id', id)
       .eq('user_id', user.id)
       .select()

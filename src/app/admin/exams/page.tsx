@@ -22,7 +22,7 @@ interface Exam {
   created_by: {
     full_name: string
   }
-  questions: Array<{
+  questions?: Array<{
     id: string
     question_text: string
     type: string
@@ -35,6 +35,10 @@ interface Exam {
     total_score: number | null
     submitted_at: string | null
   }>
+}
+
+function getQuestionCount(exam: Exam): number {
+  return Array.isArray(exam.questions) ? exam.questions.length : 0
 }
 
 export default function AdminExamsPage() {
@@ -329,8 +333,9 @@ export default function AdminExamsPage() {
                       </span>
                     </div>
                     
-                    <div className="flex items-center justify-between text-xs text-gray-600 mb-3">
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-gray-600 mb-3">
                       <span>Duration: {exam.duration} min</span>
+                      <span>Questions: {getQuestionCount(exam)}</span>
                       <span>Participants: {exam.user_exams?.length || 0}</span>
                     </div>
                     
@@ -386,6 +391,9 @@ export default function AdminExamsPage() {
                       Duration
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Questions
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Participants
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -425,6 +433,9 @@ export default function AdminExamsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {exam.duration} min
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {getQuestionCount(exam)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {exam.user_exams?.length || 0}

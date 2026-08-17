@@ -576,7 +576,8 @@ export function useAuth() {
         return { 
           success: true, 
           message: result.message,
-          temporaryPassword: result.temporaryPassword // For display purposes
+          temporaryPassword: result.temporaryPassword,
+          whatsappSent: Boolean(result.whatsappSent),
         }
       } else {
         return { error: result.error || 'Failed to reset password' }

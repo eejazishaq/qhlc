@@ -175,22 +175,22 @@ export default function LandingPage() {
                       {/* Content overlay - Responsive for mobile */}
                       <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 md:px-8">
                         <div className="text-center text-white w-full max-w-4xl mx-auto">
-                          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight">
+                          {/* <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-7xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight">
                             {banner.title}
                           </h1>
                           {banner.description && (
                             <p className="text-sm sm:text-base md:text-xl lg:text-2xl xl:text-3xl mb-4 sm:mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed opacity-90 px-2">
                               {banner.description}
                             </p>
-                          )}
-                          {banner.link_url && (
+                          )} */}
+                          {/* {banner.link_url && (
                             <Link
                               href={banner.link_url}
                               className="inline-block bg-white text-gray-900 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-full font-semibold text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
                             >
                               Learn More
                             </Link>
-                          )}
+                          )} */}
                         </div>
                       </div>
                     </div>
@@ -245,7 +245,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto text-center">
           <div className="mb-16">
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-900 mb-8 leading-tight">
-              Qur&apos;an Hadees &{' '}
+              Qur&apos;an Hadees {' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                 Learning Course
               </span>
@@ -285,7 +285,7 @@ export default function LandingPage() {
                   <div className="flex justify-center mb-3">
                     <Logo width={48} height={48} className="w-12 h-12" />
                   </div>
-                  <div className="text-lg font-semibold">Quranic Learning Portal</div>
+                  <div className="text-lg font-semibold">Qur&apos;an Hadees Learning Course</div>
                   <div className="text-sm opacity-90 mt-1">Access anywhere, anytime</div>
                 </div>
               </div>
@@ -586,10 +586,10 @@ export default function LandingPage() {
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Ready to Start Your Quranic Learning Journey?
+            Ready to Start Your Qur&apos;an Hadees Learning Journey?
           </h2>
           <p className="text-2xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Join thousands of students and educators using QHLC for Quranic education and exam management.
+            Join thousands of students and educators using QHLC for Qur&apos;an Hadees education.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Link

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/route-client'
 
 export async function GET(
   request: NextRequest,
@@ -7,21 +7,15 @@ export async function GET(
 ) {
   try {
     const { id: examId } = await params
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
@@ -80,7 +74,7 @@ export async function GET(
         )
       `)
       .eq('exam_id', examId)
-      .in('status', ['completed', 'evaluated'])
+      .in('status', ['completed', 'evaluated', 'published'])
       .order('submitted_at', { ascending: false })
 
     if (userExamsError) {
@@ -128,6 +122,7 @@ export async function GET(
         total_submissions: processedUserExams.length,
         completed: processedUserExams.filter((ue: any) => ue.status === 'completed').length,
         evaluated: processedUserExams.filter((ue: any) => ue.status === 'evaluated').length,
+        published: processedUserExams.filter((ue: any) => ue.status === 'published').length,
         fully_evaluated: processedUserExams.filter((ue: any) => ue.evaluation_stats.fully_evaluated).length
       }
     })
@@ -144,21 +139,15 @@ export async function POST(
 ) {
   try {
     const { id: examId } = await params
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }
@@ -181,20 +170,19 @@ export async function POST(
 
     // Parse request body
     const body = await request.json()
-    const { user_answer_id, is_correct, score_awarded, remarks } = body
+    const { user_answer_id, is_correct, score_awarded } = body
 
     if (!user_answer_id || is_correct === undefined || score_awarded === undefined) {
       return NextResponse.json({ error: 'Missing required fields: user_answer_id, is_correct, score_awarded' }, { status: 400 })
     }
 
-    // Update the user answer
+    // user_answers has no `remarks` column in schema — do not send unknown columns (PostgREST PGRST204).
     const { data: updatedAnswer, error: updateError } = await supabase
       .from('user_answers')
       .update({
         is_correct,
         score_awarded,
         evaluated_by: user.id,
-        remarks: remarks || null
       })
       .eq('id', user_answer_id)
       .select()
@@ -202,7 +190,10 @@ export async function POST(
 
     if (updateError) {
       console.error('Error updating user answer:', updateError)
-      return NextResponse.json({ error: 'Failed to evaluate answer' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Failed to evaluate answer', details: updateError.message, code: updateError.code },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({
@@ -223,21 +214,15 @@ export async function PUT(
 ) {
   try {
     const { id: examId } = await params
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    
-    // Get authentication token from Authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'No authentication token available' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
-    
-    // Verify the token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabase = createSupabaseRouteHandlerClient(token)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 })
     }

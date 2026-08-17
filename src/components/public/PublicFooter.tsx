@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Mail, Phone } from 'lucide-react'
+import { Mail, Phone, Facebook, Instagram, Youtube } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 
 export function PublicFooter() {
@@ -63,6 +63,38 @@ export function PublicFooter() {
                   <Phone className="w-4 h-4 text-blue-400 flex-shrink-0" />
                   <span className="text-gray-300 text-sm leading-5">+966-XX-XXX-XXXX</span>
                 </div>
+                <div className="pt-2">
+                  <p className="text-white text-sm font-medium mb-3">Social</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <a
+                      href="https://www.facebook.com/RiyadhIslahi/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-gray-200 hover:bg-white/20 hover:text-white transition-colors"
+                      aria-label="Facebook — Riyadh Islahi Center"
+                    >
+                      <Facebook className="w-5 h-5" aria-hidden />
+                    </a>
+                    <a
+                      href="https://www.instagram.com/riyadh_islahi_center/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-gray-200 hover:bg-white/20 hover:text-white transition-colors"
+                      aria-label="Instagram — Riyadh Islahi Center"
+                    >
+                      <Instagram className="w-5 h-5" aria-hidden />
+                    </a>
+                    <a
+                      href="https://youtube.com/@riccmedia?si=0TGblSVErIX4MdT0"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-gray-200 hover:bg-white/20 hover:text-white transition-colors"
+                      aria-label="YouTube — RICC Media"
+                    >
+                      <Youtube className="w-5 h-5" aria-hidden />
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -74,7 +106,7 @@ export function PublicFooter() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 min-w-0">
             <div className="text-gray-300 text-sm leading-relaxed">
-              &copy; 2025 QHLC. All rights reserved.
+              &copy; {new Date().getFullYear()} QHLC. All rights reserved.
             </div>
             <div className="flex items-center space-x-6 text-sm text-gray-300 flex-wrap justify-center sm:justify-end">
               <Link href="/privacy" className="hover:text-white transition-colors whitespace-nowrap leading-relaxed">

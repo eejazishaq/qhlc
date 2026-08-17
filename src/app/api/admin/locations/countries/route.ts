@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+/** Dial code only: +966, +91. Accepts with or without + */
+function normalizeCountryPhoneCode(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null
+  const t = raw.trim()
+  if (!t) return null
+  const digits = t.replace(/\D/g, '')
+  if (!digits || digits[0] === '0') return null
+  if (digits.length < 1 || digits.length > 4) return null
+  return `+${digits}`
+}
+
 export async function GET(request: NextRequest) {
   try {
     // Get the authorization header
@@ -53,7 +64,9 @@ export async function GET(request: NextRequest) {
 
     // Apply search filter
     if (search) {
-      query = query.or(`name.ilike.%${search}%,code.ilike.%${search}%`)
+      query = query.or(
+        `name.ilike.%${search}%,code.ilike.%${search}%,phone_code.ilike.%${search}%`
+      )
     }
 
     // Apply status filter
@@ -143,13 +156,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, code, is_active = true } = body
+    const { name, code, phone_code, is_active = true } = body
 
     // Validate required fields
     if (!name || !code) {
       return NextResponse.json({ 
         error: 'Missing required fields: name and code are required' 
       }, { status: 400 })
+    }
+
+    const dial = normalizeCountryPhoneCode(phone_code)
+    if (!dial) {
+      return NextResponse.json(
+        { error: 'Mobile / dial code is required (e.g. +966, +91)' },
+        { status: 400 }
+      )
     }
 
     // Check if country code already exists
@@ -171,6 +192,7 @@ export async function POST(request: NextRequest) {
       .insert({
         name: name.trim(),
         code: code.trim().toUpperCase(),
+        phone_code: dial,
         is_active
       })
       .select()

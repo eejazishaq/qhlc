@@ -32,12 +32,15 @@ export interface Database {
           whatsapp_no: string | null
           gender: 'male' | 'female'
           user_type: 'user' | 'coordinator' | 'convener' | 'admin' | 'super_admin'
+          registration_type: 'adult' | 'child'
           area_id: string
           center_id: string
           father_name: string | null
           dob: string | null
           iqama_number: string | null
           serial_number: string
+          email: string | null
+          contact_email: string | null
           profile_image: string | null
           is_active: boolean
           created_at: string
@@ -50,12 +53,15 @@ export interface Database {
           whatsapp_no?: string | null
           gender: 'male' | 'female'
           user_type?: 'user' | 'coordinator' | 'convener' | 'admin' | 'super_admin'
+          registration_type?: 'adult' | 'child'
           area_id: string
           center_id: string
           father_name?: string | null
           dob?: string | null
           iqama_number?: string | null
           serial_number?: string
+          email?: string | null
+          contact_email?: string | null
           profile_image?: string | null
           is_active?: boolean
           created_at?: string
@@ -68,12 +74,15 @@ export interface Database {
           whatsapp_no?: string | null
           gender?: 'male' | 'female'
           user_type?: 'user' | 'coordinator' | 'convener' | 'admin' | 'super_admin'
+          registration_type?: 'adult' | 'child'
           area_id?: string
           center_id?: string
           father_name?: string | null
           dob?: string | null
           iqama_number?: string | null
           serial_number?: string
+          email?: string | null
+          contact_email?: string | null
           profile_image?: string | null
           is_active?: boolean
           created_at?: string

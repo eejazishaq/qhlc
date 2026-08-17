@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { User, Mail, Phone, MapPin, Calendar, Edit, Save, X, Lock, Eye, EyeOff } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Edit, Save, X, Lock, Eye, EyeOff } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -29,12 +29,10 @@ export default function UserProfilePage() {
   const [filteredCenters, setFilteredCenters] = useState<{ id: string; name: string; area_id: string; is_active: boolean }[]>([])
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
+    contact_email: profile?.contact_email || '',
     mobile: profile?.mobile || '',
     whatsapp_no: profile?.whatsapp_no || '',
     gender: profile?.gender || '' as 'male' | 'female' | '',
-    father_name: profile?.father_name || '',
-    dob: profile?.dob || '',
-    iqama_number: profile?.iqama_number || '',
     area_id: profile?.area_id || '',
     center_id: profile?.center_id || '',
   })
@@ -77,12 +75,10 @@ export default function UserProfilePage() {
   useEffect(() => {
     setFormData({
       full_name: profile?.full_name || '',
+      contact_email: profile?.contact_email || '',
       mobile: profile?.mobile || '',
       whatsapp_no: profile?.whatsapp_no || '',
       gender: profile?.gender || '' as 'male' | 'female' | '',
-      father_name: profile?.father_name || '',
-      dob: profile?.dob || '',
-      iqama_number: profile?.iqama_number || '',
       area_id: profile?.area_id || '',
       center_id: profile?.center_id || '',
     })
@@ -100,8 +96,8 @@ export default function UserProfilePage() {
     try {
       const updateData = {
         ...formData,
+        contact_email: formData.contact_email?.trim() || null,
         gender: formData.gender as 'male' | 'female' | undefined,
-        dob: formData.dob === '' ? null : formData.dob,
       }
       const result = await updateProfile(updateData)
       if (!result.error) {
@@ -115,12 +111,10 @@ export default function UserProfilePage() {
   const handleCancel = () => {
     setFormData({
       full_name: profile?.full_name || '',
+      contact_email: profile?.contact_email || '',
       mobile: profile?.mobile || '',
       whatsapp_no: profile?.whatsapp_no || '',
       gender: profile?.gender || '' as 'male' | 'female' | '',
-      father_name: profile?.father_name || '',
-      dob: profile?.dob || '',
-      iqama_number: profile?.iqama_number || '',
       area_id: profile?.area_id || '',
       center_id: profile?.center_id || '',
     })
@@ -265,6 +259,18 @@ export default function UserProfilePage() {
                   disabled={!isEditing}
                 />
                 <Input
+                  label="Email"
+                  name="contact_email"
+                  type="email"
+                  value={formData.contact_email}
+                  onChange={handleInputChange}
+                  leftIcon={<Mail className="w-4 h-4" />}
+                  disabled={!isEditing}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
                   label="Mobile Number"
                   name="mobile"
                   value={formData.mobile}
@@ -272,9 +278,6 @@ export default function UserProfilePage() {
                   leftIcon={<Phone className="w-4 h-4" />}
                   disabled={!isEditing}
                 />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="WhatsApp Number"
                   name="whatsapp_no"
@@ -300,35 +303,6 @@ export default function UserProfilePage() {
                   </select>
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Father's Name"
-                  name="father_name"
-                  value={formData.father_name}
-                  onChange={handleInputChange}
-                  leftIcon={<User className="w-4 h-4" />}
-                  disabled={!isEditing}
-                />
-                <Input
-                  label="Date of Birth"
-                  name="dob"
-                  type="date"
-                  value={formData.dob}
-                  onChange={handleInputChange}
-                  leftIcon={<Calendar className="w-4 h-4" />}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <Input
-                label="Iqama Number"
-                name="iqama_number"
-                value={formData.iqama_number}
-                onChange={handleInputChange}
-                leftIcon={<User className="w-4 h-4" />}
-                disabled={!isEditing}
-              />
 
               {/* Area and Exam Center Dropdowns */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -187,6 +187,7 @@ export async function POST(request: NextRequest) {
       father_name,
       dob,
       iqama_number,
+      registration_type = 'adult',
       is_active = true
     } = body
 
@@ -225,6 +226,9 @@ export async function POST(request: NextRequest) {
     const serialNumber = `QHLC-${String((count || 0) + 1).padStart(5, '0')}`
 
     // Create user profile - don't specify ID, let the database auto-generate it
+    const regType =
+      registration_type === 'child' ? 'child' : 'adult'
+
     const { data: newUser, error: insertError } = await supabase
       .from('profiles')
       .insert({
@@ -238,6 +242,7 @@ export async function POST(request: NextRequest) {
         father_name: father_name || null,
         dob: dob || null,
         iqama_number: iqama_number || null,
+        registration_type: regType,
         serial_number: serialNumber,
         is_active
       })

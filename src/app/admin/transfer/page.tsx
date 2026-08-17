@@ -38,6 +38,7 @@ interface TransferData {
     updated_at: string
     center_name: string | null
     area_name: string | null
+    serial_number?: string | null
   }>
   centers: Array<{
     id: string
@@ -57,6 +58,18 @@ interface TransferData {
     total: number
     pages: number
   }
+}
+
+/** Select label: Name(profile serial_number); only falls back to short uuid slice if no serial. */
+function formatUserSelectLabel(user: {
+  id: string
+  full_name: string
+  serial_number?: string | null
+}) {
+  const name = user.full_name?.trim() || 'User'
+  const sn = user.serial_number?.trim()
+  const idPart = sn ?? user.id.replace(/-/g, '').slice(0, 8)
+  return `${name}(${idPart})`
 }
 
 export default function AdminTransferPage() {
@@ -360,9 +373,9 @@ export default function AdminTransferPage() {
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Choose a user...</option>
-                {transferData?.users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.full_name} - {user.center_name || 'No Center'}
+                {transferData?.users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {formatUserSelectLabel(u)} — {u.center_name || 'No Center'}
                   </option>
                 ))}
               </select>

@@ -6,12 +6,11 @@ import { authenticatedFetch } from '@/lib/utils/api'
 import { 
   Plus, 
   Search, 
-  Filter, 
   Edit, 
   Trash2, 
-  Eye,
   Globe,
-  RefreshCw
+  RefreshCw,
+  Phone
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -19,6 +18,7 @@ interface Country {
   id: string
   name: string
   code: string
+  phone_code?: string | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -27,6 +27,7 @@ interface Country {
 interface CountryFormData {
   name: string
   code: string
+  phone_code: string
   is_active: boolean
 }
 
@@ -44,6 +45,7 @@ export default function CountriesPage() {
   const [formData, setFormData] = useState<CountryFormData>({
     name: '',
     code: '',
+    phone_code: '',
     is_active: true
   })
 
@@ -100,7 +102,7 @@ export default function CountriesPage() {
 
       setShowModal(false)
       setEditingCountry(null)
-      setFormData({ name: '', code: '', is_active: true })
+      setFormData({ name: '', code: '', phone_code: '', is_active: true })
       fetchCountries()
     } catch (error) {
       console.error('Error saving country:', error)
@@ -113,6 +115,7 @@ export default function CountriesPage() {
     setFormData({
       name: country.name,
       code: country.code,
+      phone_code: country.phone_code || '',
       is_active: country.is_active
     })
     setShowModal(true)
@@ -141,7 +144,7 @@ export default function CountriesPage() {
   }
 
   const resetForm = () => {
-    setFormData({ name: '', code: '', is_active: true })
+    setFormData({ name: '', code: '', phone_code: '', is_active: true })
     setEditingCountry(null)
   }
 
@@ -238,6 +241,9 @@ export default function CountriesPage() {
                     Code
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Phone code
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -251,13 +257,13 @@ export default function CountriesPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                       Loading countries...
                     </td>
                   </tr>
                 ) : countries.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                       No countries found
                     </td>
                   </tr>
@@ -273,6 +279,9 @@ export default function CountriesPage() {
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                           {country.code}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        {country.phone_code || '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -337,6 +346,7 @@ export default function CountriesPage() {
                           </div>
                           <div className="text-xs text-gray-500 truncate">
                             Code: {country.code}
+                            {country.phone_code ? ` · ${country.phone_code}` : ''}
                           </div>
                         </div>
                       </div>
@@ -444,6 +454,28 @@ export default function CountriesPage() {
                     placeholder="e.g., US, UK, SA"
                     maxLength={3}
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Mobile phone code *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={formData.phone_code}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone_code: e.target.value }))}
+                      className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 font-mono"
+                      placeholder="e.g. +966 or 966"
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    International dialing code for this country (used with mobile numbers).
+                  </p>
                 </div>
 
                 <div className="flex items-center">

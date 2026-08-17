@@ -138,6 +138,7 @@ export async function GET(request: NextRequest) {
             id,
             full_name,
             mobile,
+            serial_number,
             user_type,
             center_id,
             area_id,
