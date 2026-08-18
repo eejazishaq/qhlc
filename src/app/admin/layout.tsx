@@ -81,7 +81,8 @@ export default function AdminLayout({
       items: [
         { name: 'Exams', href: '/admin/exams', icon: FileText },
         { name: 'Questions', href: '/admin/questions', icon: HelpCircle },
-        { name: 'Evaluation', href: '/admin/evaluation', icon: CheckCircle }
+        { name: 'Evaluation', href: '/admin/evaluation', icon: CheckCircle },
+        { name: 'Bulk Evaluation', href: '/admin/evaluation/bulk', icon: CheckCircle }
       ]
     },
     {
